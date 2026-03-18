@@ -51,4 +51,12 @@ export const adminApi = {
   exportAll: () => api.get('/admin/export'),
 };
 
+export const allocationApi = {
+  getPositions: () => api.get('/allocation/positions'),
+  getSummary: () => api.get('/allocation/summary'),
+  getCandidates: (positionId) => api.get(`/allocation/positions/${positionId}/candidates`),
+  allocate: (positionId, data) => api.post(`/allocation/positions/${positionId}/allocate`, data),
+  deallocate: (positionId, applicantId) => api.delete(`/allocation/positions/${positionId}/deallocate/${applicantId}`),
+};
+
 export default api;

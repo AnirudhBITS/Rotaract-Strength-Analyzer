@@ -5,6 +5,8 @@ import ResultPage from './pages/ResultPage'
 import AdminLogin from './pages/AdminLogin'
 import AdminDashboard from './pages/AdminDashboard'
 import ApplicantDetail from './pages/ApplicantDetail'
+import PositionsPage from './pages/PositionsPage'
+import PositionDetail from './pages/PositionDetail'
 
 export default function App() {
   return (
@@ -15,6 +17,8 @@ export default function App() {
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin" element={<AdminDashboard />} />
       <Route path="/admin/applicant/:id" element={<ApplicantDetail />} />
+      <Route path="/admin/positions" element={<PositionsPage />} />
+      <Route path="/admin/positions/:positionId" element={<PositionDetail />} />
     </Routes>
   )
 }

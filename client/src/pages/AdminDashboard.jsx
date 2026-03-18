@@ -6,6 +6,7 @@ import {
   HiOutlineUsers, HiOutlineClock, HiOutlineCheckCircle,
   HiOutlineStar, HiOutlineXCircle, HiOutlineMagnifyingGlass,
   HiOutlineFunnel, HiOutlineArrowDownTray, HiOutlineArrowRightOnRectangle,
+  HiOutlineSquares2X2,
 } from 'react-icons/hi2'
 import { adminApi } from '../api/client'
 
@@ -104,6 +105,13 @@ export default function AdminDashboard() {
             <p className="text-xs text-navy-500">Welcome, {adminInfo.name}</p>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              to="/admin/positions"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-xl hover:bg-primary-700 transition-colors"
+            >
+              <HiOutlineSquares2X2 className="w-4 h-4" />
+              Positions
+            </Link>
             <button
               onClick={handleExport}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-navy-700 bg-white border border-border-subtle rounded-xl hover:bg-navy-50 transition-colors"

@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { DISTRICT_POSITIONS } = require('../config/constants');
 
 async function login(req, res, next) {
   try {
@@ -44,23 +45,24 @@ async function getApplicants(req, res, next) {
 
     const offset = (page - 1) * limit;
 
-    let query = db('applicants').select('*');
+    let baseQuery = db('applicants');
 
     if (status) {
-      query = query.where('status', status);
+      baseQuery = baseQuery.where('status', status);
     }
 
     if (search) {
-      query = query.where(function () {
+      baseQuery = baseQuery.where(function () {
         this.where('name', 'like', `%${search}%`)
           .orWhere('email', 'like', `%${search}%`)
           .orWhere('club_name', 'like', `%${search}%`);
       });
     }
 
-    const [{ total }] = await query.clone().count('* as total');
+    const [{ total }] = await baseQuery.clone().count('* as total');
 
-    const applicants = await query
+    const applicants = await baseQuery.clone()
+      .select('*')
       .orderBy(sortBy, sortOrder)
       .limit(limit)
       .offset(offset);
@@ -99,11 +101,21 @@ async function getApplicantDetail(req, res, next) {
       .where({ applicant_id: id })
       .orderBy('preference_order', 'asc');
 
+    const enrichedPreferences = rolePreferences.map((r) => {
+      const position = DISTRICT_POSITIONS.find((p) => p.id === r.position_id);
+      return {
+        ...r,
+        position_title: position?.title || `Unknown Position #${r.position_id}`,
+        position_category: position?.category || '',
+        position_tier: position?.tier || '',
+      };
+    });
+
     res.json({
       applicant,
       strengthScores,
       responses,
-      rolePreferences,
+      rolePreferences: enrichedPreferences,
     });
   } catch (err) {
     next(err);

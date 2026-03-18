@@ -9,6 +9,7 @@ require('dotenv').config();
 
 const applicationRoutes = require('./routes/application');
 const adminRoutes = require('./routes/admin');
+const allocationRoutes = require('./routes/allocation');
 const uploadRoutes = require('./routes/upload');
 const errorHandler = require('./middleware/errorHandler');
 
@@ -48,6 +49,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Routes
 app.use('/api/application', applicationRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/allocation', allocationRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // Health check

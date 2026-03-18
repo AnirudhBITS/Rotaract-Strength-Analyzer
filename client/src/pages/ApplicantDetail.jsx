@@ -247,7 +247,12 @@ export default function ApplicantDetail() {
                       <span className="w-6 h-6 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
                         {r.preference_order}
                       </span>
-                      <span className="text-sm text-navy-700">Position #{r.position_id}</span>
+                      <div>
+                        <span className="text-sm font-medium text-navy-700">{r.position_title}</span>
+                        {r.position_category && (
+                          <p className="text-xs text-navy-400">{r.position_category}</p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -266,7 +271,12 @@ export default function ApplicantDetail() {
                       <span className="w-6 h-6 rounded-full bg-gold-100 text-gold-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
                         {r.preference_order}
                       </span>
-                      <span className="text-sm text-navy-700">Position #{r.position_id}</span>
+                      <div>
+                        <span className="text-sm font-medium text-navy-700">{r.position_title}</span>
+                        {r.position_category && (
+                          <p className="text-xs text-navy-400">{r.position_category}</p>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
