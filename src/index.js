@@ -10,8 +10,13 @@ console.log('DB_NAME:', process.env.DB_NAME);
 console.log('DB_PASSWORD set:', !!process.env.DB_PASSWORD);
 console.log('=========================');
 
+console.log('Loading app module...');
 const app = require('./app');
+console.log('App module loaded');
+
+console.log('Loading database module...');
 const db = require('./config/database');
+console.log('Database module loaded');
 
 const PORT = process.env.PORT || 5000;
 
