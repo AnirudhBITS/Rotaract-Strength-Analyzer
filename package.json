@@ -1,14 +1,35 @@
 {
   "name": "rotaract-strength-analyzer",
   "version": "1.0.0",
-  "description": "Rotaract Strength Analyzer - Full Stack Application",
+  "main": "src/index.js",
   "scripts": {
-    "install:all": "cd client && npm install && cd ../server && npm install",
-    "build": "cd client && npm run build",
-    "start": "cd server && npm start",
-    "dev": "cd server && npm run dev"
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "build": "cd client && npm install && npm run build",
+    "migrate": "knex migrate:latest --knexfile knexfile.js",
+    "migrate:rollback": "knex migrate:rollback --knexfile knexfile.js",
+    "postinstall": "npm run build"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Rotaract Strength Analyzer - Full Stack Application",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "compression": "^1.8.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.1",
+    "express-validator": "^7.3.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "knex": "^3.1.0",
+    "morgan": "^1.10.1",
+    "multer": "^2.1.1",
+    "mysql2": "^3.20.0"
   }
 }

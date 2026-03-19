@@ -59,7 +59,7 @@ app.get('/api/health', (req, res) => {
 
 // Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
-  const clientDistPath = path.join(__dirname, '../../client/dist');
+  const clientDistPath = path.join(__dirname, '../client/dist');
   app.use(express.static(clientDistPath));
 
   // Handle React Router - serve index.html for all non-API routes
