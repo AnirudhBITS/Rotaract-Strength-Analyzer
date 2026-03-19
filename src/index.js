@@ -1,9 +1,5 @@
-const app = require('./app');
-const db = require('./config/database');
-
-const PORT = process.env.PORT || 5000;
-
-// Log environment variables for debugging (without sensitive values)
+// Log environment variables FIRST before any imports
+console.log('=== Server Starting ===');
 console.log('=== Environment Check ===');
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('PORT:', process.env.PORT);
@@ -13,6 +9,11 @@ console.log('DB_USER:', process.env.DB_USER);
 console.log('DB_NAME:', process.env.DB_NAME);
 console.log('DB_PASSWORD set:', !!process.env.DB_PASSWORD);
 console.log('=========================');
+
+const app = require('./app');
+const db = require('./config/database');
+
+const PORT = process.env.PORT || 5000;
 
 async function start() {
   try {
