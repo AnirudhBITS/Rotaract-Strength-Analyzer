@@ -11,8 +11,15 @@ console.log('DB_PASSWORD set:', !!process.env.DB_PASSWORD);
 console.log('=========================');
 
 console.log('Loading app module...');
-const app = require('./app');
-console.log('App module loaded');
+let app;
+try {
+  app = require('./app');
+  console.log('App module loaded');
+} catch (err) {
+  console.error('Failed to load app module:', err.message);
+  console.error(err.stack);
+  process.exit(1);
+}
 
 console.log('Loading database module...');
 const db = require('./config/database');
