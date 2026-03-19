@@ -63,7 +63,8 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static(clientDistPath));
 
   // Handle React Router - serve index.html for all non-API routes
-  app.get('*', (req, res) => {
+  // Express 5 requires named parameter for wildcards
+  app.get('/{*splat}', (req, res) => {
     res.sendFile(path.join(clientDistPath, 'index.html'));
   });
 }
