@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# Proxy API requests to Node.js backend
+RewriteCond %{REQUEST_URI} ^/api [NC]
+RewriteRule ^(.*)$ http://localhost:5001/$1 [P,L]
+
+# Proxy uploads requests to Node.js backend
+RewriteCond %{REQUEST_URI} ^/uploads [NC]
+RewriteRule ^(.*)$ http://localhost:5001/$1 [P,L]
+
+# Handle React Router - serve index.html for all non-file routes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [L]
