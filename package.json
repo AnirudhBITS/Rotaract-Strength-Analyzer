@@ -5,10 +5,9 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "build": "echo 'Build skipped - API only'",
+    "build": "echo 'API only - no build needed'",
     "migrate": "knex migrate:latest --knexfile knexfile.js",
-    "migrate:rollback": "knex migrate:rollback --knexfile knexfile.js",
-    "postinstall": "echo 'Postinstall skipped'"
+    "migrate:rollback": "knex migrate:rollback --knexfile knexfile.js"
   },
   "engines": {
     "node": ">=18.0.0"
