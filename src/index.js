@@ -54,13 +54,27 @@ async function start() {
       console.log('Default admin created (username: admin, password: admin123)');
     }
 
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on http://0.0.0.0:${PORT}`);
+    });
+
+    server.on('error', (err) => {
+      console.error('Server error:', err);
+      process.exit(1);
     });
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
   }
 }
+
+// Handle uncaught errors
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled rejection:', err);
+});
 
 start();
