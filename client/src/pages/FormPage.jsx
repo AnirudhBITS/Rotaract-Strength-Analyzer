@@ -23,15 +23,15 @@ function loadDraft() {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY)
     return raw ? JSON.parse(raw) : null
-  } catch { return null }
+  } catch (e) { return null }
 }
 
 function saveDraft(data) {
-  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)) } catch {}
+  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)) } catch (e) {}
 }
 
 function clearDraft() {
-  try { sessionStorage.removeItem(SESSION_KEY) } catch {}
+  try { sessionStorage.removeItem(SESSION_KEY) } catch (e) {}
 }
 
 export default function FormPage() {
@@ -58,28 +58,36 @@ export default function FormPage() {
 
   useEffect(() => {
     async function fetchData() {
+      const errors = []
+
       try {
-        const [qRes, pRes, cRes] = await Promise.allSettled([
-          applicationApi.getQuestions(),
-          applicationApi.getPositions(),
-          applicationApi.getClubs(),
-        ])
-
-        if (qRes.status === 'fulfilled') setQuestions(qRes.value.data.questions)
-        if (pRes.status === 'fulfilled') setPositions(pRes.value.data.positions)
-        if (cRes.status === 'fulfilled') setClubs(cRes.value.data.clubs)
-
-        const failed = [qRes, pRes, cRes].filter((r) => r.status === 'rejected')
-        if (failed.length === 3) {
-          toast.error('Failed to load form data. Please refresh.')
-        } else if (failed.length > 0) {
-          toast.error('Some data failed to load. You can still continue.')
-        }
-      } catch {
-        toast.error('Failed to load form data. Please refresh.')
-      } finally {
-        setLoading(false)
+        const qRes = await applicationApi.getQuestions()
+        setQuestions(qRes.data.questions)
+      } catch (e) {
+        errors.push('questions')
       }
+
+      try {
+        const pRes = await applicationApi.getPositions()
+        setPositions(pRes.data.positions)
+      } catch (e) {
+        errors.push('positions')
+      }
+
+      try {
+        const cRes = await applicationApi.getClubs()
+        setClubs(cRes.data.clubs)
+      } catch (e) {
+        errors.push('clubs')
+      }
+
+      if (errors.length === 3) {
+        toast.error('Failed to load form data. Please refresh.')
+      } else if (errors.length > 0) {
+        toast.error('Some data failed to load. You can still continue.')
+      }
+
+      setLoading(false)
     }
     fetchData()
   }, [])
@@ -177,7 +185,7 @@ export default function FormPage() {
       })
 
       clearDraft()
-      try { sessionStorage.removeItem('rsa_biodata_state') } catch {}
+      try { sessionStorage.removeItem('rsa_biodata_state') } catch (e) {}
       toast.success('Application submitted successfully!')
       navigate('/result', {
         state: {
