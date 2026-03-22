@@ -5,9 +5,16 @@ const BACKEND_URL = API_URL.replace(/\/api\/?$/, '');
 
 const api = axios.create({
   baseURL: API_URL,
-  headers: { 'Content-Type': 'application/json' },
   timeout: 30000,
   withCredentials: false,
+});
+
+// Only set Content-Type for POST/PUT/PATCH, not GET
+api.interceptors.request.use((config) => {
+  if (config.method !== 'get') {
+    config.headers['Content-Type'] = 'application/json';
+  }
+  return config;
 });
 
 export const getFileUrl = (path) => {

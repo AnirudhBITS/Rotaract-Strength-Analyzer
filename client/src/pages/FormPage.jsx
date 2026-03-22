@@ -54,39 +54,32 @@ export default function FormPage() {
   }, [step, biodata, responses, selectedPositions, recommendations])
 
   useEffect(() => {
-    const API = import.meta.env.VITE_API_URL || 'https://rotaract3234strengthanalyser-backend.blackitechs.org/api'
-
     async function fetchData() {
       const errors = []
 
       try {
-        const res = await fetch(API + '/application/questions')
-        const json = await res.json()
-        setQuestions(json.questions)
+        const qRes = await applicationApi.getQuestions()
+        setQuestions(qRes.data.questions)
       } catch (e) {
-        errors.push('questions')
+        errors.push('questions: ' + (e.message || 'unknown'))
       }
 
       try {
-        const res = await fetch(API + '/application/positions')
-        const json = await res.json()
-        setPositions(json.positions)
+        const pRes = await applicationApi.getPositions()
+        setPositions(pRes.data.positions)
       } catch (e) {
-        errors.push('positions')
+        errors.push('positions: ' + (e.message || 'unknown'))
       }
 
       try {
-        const res = await fetch(API + '/application/clubs')
-        const json = await res.json()
-        setClubs(json.clubs)
+        const cRes = await applicationApi.getClubs()
+        setClubs(cRes.data.clubs)
       } catch (e) {
-        errors.push('clubs')
+        errors.push('clubs: ' + (e.message || 'unknown'))
       }
 
-      if (errors.length === 3) {
-        toast.error('Failed to load form data. Please refresh.')
-      } else if (errors.length > 0) {
-        toast.error('Some data failed to load. You can still continue.')
+      if (errors.length > 0) {
+        toast.error('Load errors: ' + errors.join(', '), { duration: 10000 })
       }
 
       setLoading(false)
