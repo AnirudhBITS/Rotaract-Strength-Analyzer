@@ -38,6 +38,7 @@ api.interceptors.response.use(
 export const applicationApi = {
   getQuestions: () => api.get('/application/questions'),
   getPositions: () => api.get('/application/positions'),
+  getClubs: () => api.get('/application/clubs'),
   checkDuplicate: (data) => api.post('/application/check-duplicate', data),
   sendOTP: (data) => api.post('/application/send-otp', data),
   verifyOTP: (data) => api.post('/application/verify-otp', data),

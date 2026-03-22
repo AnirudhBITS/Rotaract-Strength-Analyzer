@@ -6,6 +6,7 @@ const {
   getQuestions,
   getPositions,
   checkDuplicate,
+  getClubs,
   sendOTP,
   verifyOTPHandler,
 } = require('../controllers/applicationController');
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.get('/questions', getQuestions);
 router.get('/positions', getPositions);
+router.get('/clubs', getClubs);
 router.post('/check-duplicate', checkDuplicate);
 router.post('/send-otp', sendOTP);
 router.post('/verify-otp', verifyOTPHandler);

@@ -3,6 +3,7 @@ const { analyzeApplicant } = require('../utils/scoringEngine');
 const { sendAcknowledgement, sendAdminNotification, sendOTPEmail } = require('../utils/mailer');
 const { setOTP, verifyOTP } = require('../utils/otpStore');
 const { DISTRICT_POSITIONS } = require('../config/constants');
+const { ROTARACT_CLUBS } = require('../config/clubs');
 
 async function submitApplication(req, res, next) {
   const trx = await db.transaction();
@@ -167,6 +168,10 @@ async function getPositions(req, res) {
   res.json({ positions: DISTRICT_POSITIONS, categories: ROLE_CATEGORIES });
 }
 
+async function getClubs(req, res) {
+  res.json({ clubs: ROTARACT_CLUBS });
+}
+
 async function checkDuplicate(req, res, next) {
   try {
     const { email, phone } = req.body;
@@ -221,4 +226,4 @@ async function verifyOTPHandler(req, res) {
   res.json({ verified: true });
 }
 
-module.exports = { submitApplication, getQuestions, getPositions, checkDuplicate, sendOTP, verifyOTPHandler };
+module.exports = { submitApplication, getQuestions, getPositions, getClubs, checkDuplicate, sendOTP, verifyOTPHandler };

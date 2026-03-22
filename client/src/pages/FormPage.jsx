@@ -43,6 +43,7 @@ export default function FormPage() {
   const [biodataErrors, setBiodataErrors] = useState({})
   const [questions, setQuestions] = useState([])
   const [positions, setPositions] = useState([])
+  const [clubs, setClubs] = useState([])
   const [responses, setResponses] = useState(draft?.responses || {})
   const [selectedPositions, setSelectedPositions] = useState(draft?.selectedPositions || [])
   const [recommendations, setRecommendations] = useState(draft?.recommendations || null)
@@ -58,12 +59,14 @@ export default function FormPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [qRes, pRes] = await Promise.all([
+        const [qRes, pRes, cRes] = await Promise.all([
           applicationApi.getQuestions(),
           applicationApi.getPositions(),
+          applicationApi.getClubs(),
         ])
         setQuestions(qRes.data.questions)
         setPositions(pRes.data.positions)
+        setClubs(cRes.data.clubs)
       } catch {
         toast.error('Failed to load form data. Please refresh.')
       } finally {
@@ -220,6 +223,7 @@ export default function FormPage() {
               data={biodata}
               onChange={setBiodata}
               errors={biodataErrors}
+              clubs={clubs}
               onSectionChange={(index, total) => setBiodataReady(index === total - 1)}
             />
           )}
