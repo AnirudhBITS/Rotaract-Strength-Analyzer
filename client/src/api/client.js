@@ -6,6 +6,8 @@ const BACKEND_URL = API_URL.replace(/\/api\/?$/, '');
 const api = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 30000,
+  withCredentials: false,
 });
 
 export const getFileUrl = (path) => {
