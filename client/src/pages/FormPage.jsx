@@ -59,14 +59,22 @@ export default function FormPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [qRes, pRes, cRes] = await Promise.all([
+        const [qRes, pRes, cRes] = await Promise.allSettled([
           applicationApi.getQuestions(),
           applicationApi.getPositions(),
           applicationApi.getClubs(),
         ])
-        setQuestions(qRes.data.questions)
-        setPositions(pRes.data.positions)
-        setClubs(cRes.data.clubs)
+
+        if (qRes.status === 'fulfilled') setQuestions(qRes.value.data.questions)
+        if (pRes.status === 'fulfilled') setPositions(pRes.value.data.positions)
+        if (cRes.status === 'fulfilled') setClubs(cRes.value.data.clubs)
+
+        const failed = [qRes, pRes, cRes].filter((r) => r.status === 'rejected')
+        if (failed.length === 3) {
+          toast.error('Failed to load form data. Please refresh.')
+        } else if (failed.length > 0) {
+          toast.error('Some data failed to load. You can still continue.')
+        }
       } catch {
         toast.error('Failed to load form data. Please refresh.')
       } finally {
