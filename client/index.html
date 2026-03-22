@@ -11,6 +11,19 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Prefetch form data before React loads
+      window.__PREFETCH__ = {};
+      var API = 'https://rotaract3234strengthanalyser-backend.blackitechs.org/api';
+      function pf(name, url) {
+        return fetch(url).then(function(r) { return r.json(); }).then(function(d) { window.__PREFETCH__[name] = d; }).catch(function() {});
+      }
+      Promise.all([
+        pf('questions', API + '/application/questions'),
+        pf('positions', API + '/application/positions'),
+        pf('clubs', API + '/application/clubs')
+      ]).then(function() { window.__PREFETCH_DONE__ = true; });
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

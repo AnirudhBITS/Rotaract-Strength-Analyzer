@@ -55,15 +55,40 @@ export default function FormPage() {
 
   useEffect(() => {
     async function fetchData() {
+      // Wait for prefetched data from index.html
+      const waitForPrefetch = () => new Promise((resolve) => {
+        if (window.__PREFETCH_DONE__) return resolve()
+        const check = setInterval(() => {
+          if (window.__PREFETCH_DONE__) { clearInterval(check); resolve() }
+        }, 50)
+        setTimeout(() => { clearInterval(check); resolve() }, 5000)
+      })
+
+      await waitForPrefetch()
+
+      const pf = window.__PREFETCH__ || {}
+
       try {
-        const [qRes, pRes, cRes] = await Promise.all([
-          applicationApi.getQuestions(),
-          applicationApi.getPositions(),
-          applicationApi.getClubs(),
-        ])
-        setQuestions(qRes.data.questions)
-        setPositions(pRes.data.positions)
-        setClubs(cRes.data.clubs)
+        if (pf.questions) {
+          setQuestions(pf.questions.questions)
+        } else {
+          const res = await applicationApi.getQuestions()
+          setQuestions(res.data.questions)
+        }
+
+        if (pf.positions) {
+          setPositions(pf.positions.positions)
+        } else {
+          const res = await applicationApi.getPositions()
+          setPositions(res.data.positions)
+        }
+
+        if (pf.clubs) {
+          setClubs(pf.clubs.clubs)
+        } else {
+          const res = await applicationApi.getClubs()
+          setClubs(res.data.clubs)
+        }
       } catch (e) {
         toast.error('Failed to load form data. Please refresh.')
       } finally {
