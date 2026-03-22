@@ -62,7 +62,7 @@ function PhotoUpload({ label, value, onChange, id }) {
       const { data } = await uploadApi.uploadPhoto(file)
       onChange(data.path)
       toast.success(`${label} uploaded`)
-    } catch {
+    } catch (e) {
       toast.error('Upload failed. Please try again.')
       setPreview(null)
     } finally {
@@ -74,7 +74,7 @@ function PhotoUpload({ label, value, onChange, id }) {
     onDrop,
     accept: { 'image/*': ['.jpeg', '.jpg', '.png', '.webp'] },
     maxFiles: 1,
-    maxSize: 5 * 1024 * 1024,
+    maxSize: 30 * 1024 * 1024,
   })
 
   const clear = (e) => {
@@ -116,7 +116,7 @@ function PhotoUpload({ label, value, onChange, id }) {
             <span className="text-sm font-semibold">
               {uploading ? 'Uploading...' : isDragActive ? 'Drop it here!' : 'Drop or tap to upload'}
             </span>
-            <span className="text-xs mt-1 text-navy-300">JPG, PNG, WebP (max 5MB)</span>
+            <span className="text-xs mt-1 text-navy-300">JPG, PNG, WebP (max 30MB)</span>
           </div>
         )}
       </div>
@@ -168,10 +168,10 @@ function ClubSelect({ clubs, value, onChange, error }) {
 }
 
 function loadDraft() {
-  try { return JSON.parse(sessionStorage.getItem('rsa_biodata_state')) } catch { return null }
+  try { return JSON.parse(sessionStorage.getItem('rsa_biodata_state')) } catch (e) { return null }
 }
 function saveDraft(s) {
-  try { sessionStorage.setItem('rsa_biodata_state', JSON.stringify(s)) } catch {}
+  try { sessionStorage.setItem('rsa_biodata_state', JSON.stringify(s)) } catch (e) {}
 }
 
 export default function BiodataStep({ data, onChange, errors, clubs = [], onSectionChange }) {
@@ -180,7 +180,7 @@ export default function BiodataStep({ data, onChange, errors, clubs = [], onSect
   const [celebration, setCelebration] = useState(null)
   const [celebrated, setCelebrated] = useState(new Set(draft?.celebrated || []))
   const [otpSent, setOtpSent] = useState(false)
-  const [otpVerified, setOtpVerified] = useState(draft?.otpVerified || false)
+  const [otpVerified, setOtpVerified] = useState(draft?.otpVerified && data.email ? true : false)
   const [otpValue, setOtpValue] = useState('')
   const [otpSending, setOtpSending] = useState(false)
   const [otpVerifying, setOtpVerifying] = useState(false)
@@ -228,7 +228,7 @@ export default function BiodataStep({ data, onChange, errors, clubs = [], onSect
       toast.success(otpSent ? 'New code sent!' : 'Verification code sent!')
       setOtpCooldown(60)
       const t = setInterval(() => setOtpCooldown((p) => { if (p <= 1) { clearInterval(t); return 0 } return p - 1 }), 1000)
-    } catch { toast.error('Failed to send code. Please try again.') }
+    } catch (e) { toast.error('Failed to send code. Please try again.') }
     finally { setOtpSending(false) }
   }
 
@@ -265,6 +265,7 @@ export default function BiodataStep({ data, onChange, errors, clubs = [], onSect
 
   const dismissCelebration = () => {
     setCelebration(null)
+    if (!isLast) goTo(section + 1)
   }
 
   const fc = (field) => `

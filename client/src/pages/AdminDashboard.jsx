@@ -56,7 +56,7 @@ export default function AdminDashboard() {
       setStats(statsRes.data)
       setApplicants(applicantsRes.data.applicants)
       setPagination(applicantsRes.data.pagination)
-    } catch {
+    } catch (e) {
       toast.error('Failed to load data')
     } finally {
       setLoading(false)
@@ -74,7 +74,7 @@ export default function AdminDashboard() {
       a.click()
       URL.revokeObjectURL(url)
       toast.success('Export downloaded')
-    } catch {
+    } catch (e) {
       toast.error('Export failed')
     }
   }

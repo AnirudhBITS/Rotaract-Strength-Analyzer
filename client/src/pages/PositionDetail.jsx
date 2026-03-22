@@ -58,7 +58,7 @@ export default function PositionDetail() {
       ])
       setData(candidatesRes.data)
       setUnallocated(unallocRes.data.applicants)
-    } catch {
+    } catch (e) {
       toast.error('Failed to load position details')
       navigate('/admin/positions')
     } finally {
@@ -88,7 +88,7 @@ export default function PositionDetail() {
       await allocationApi.deallocate(positionId, applicantId)
       toast.success('Allocation removed')
       fetchData()
-    } catch {
+    } catch (e) {
       toast.error('Failed to remove allocation')
     }
   }
@@ -100,7 +100,7 @@ export default function PositionDetail() {
     try {
       const { data: res } = await allocationApi.searchApplicants(q)
       setSearchResults(res.applicants)
-    } catch { setSearchResults([]) }
+    } catch (e) { setSearchResults([]) }
     finally { setSearching(false) }
   }
 

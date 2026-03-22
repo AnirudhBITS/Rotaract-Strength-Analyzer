@@ -61,7 +61,7 @@ export default function ResultPage() {
     // Title
     pdf.setFontSize(18)
     pdf.setFont('helvetica', 'bold')
-    pdf.text('Rotaract Strength Analyzer', pageWidth / 2, y, { align: 'center' })
+    pdf.text('Rotaract 3234 DO Screening', pageWidth / 2, y, { align: 'center' })
     y += 7
 
     pdf.setFontSize(9)
@@ -159,7 +159,7 @@ export default function ResultPage() {
     pdf.text('Please note:', margin + 4, y + 5)
     pdf.setFont('helvetica', 'normal')
     pdf.setTextColor(100)
-    const noteText = 'These suggestions are intended to give you an insight into the roles that may align well with your strengths. Selecting a suggested position does not guarantee a confirmed District Official posting. All submissions will undergo a dedicated screening process, and the final decision rests with the District Rotaract Representative.'
+    const noteText = 'These suggestions are intended to give you an insight into the roles that may align well with your strengths. Selecting a suggested position does not guarantee a confirmed District Official posting. All submissions will undergo a dedicated screening process, and the final decision rests with the District Core Team.'
     const noteLines = pdf.splitTextToSize(noteText, contentWidth - 8)
     pdf.text(noteLines, margin + 4, y + 10)
     y += 28
@@ -180,7 +180,7 @@ export default function ResultPage() {
     pdf.setFontSize(8)
     pdf.setTextColor(160)
     pdf.setFont('helvetica', 'normal')
-    pdf.text('This is a system-generated acknowledgement from the Rotaract Strength Analyzer.', pageWidth / 2, y, { align: 'center' })
+    pdf.text('This is a system-generated acknowledgement from the Rotaract 3234 DO Screening.', pageWidth / 2, y, { align: 'center' })
     y += 5
     pdf.text(`Please retain your Application Number ${applicationNumber || ''} for future reference.`, pageWidth / 2, y, { align: 'center' })
 
@@ -192,8 +192,9 @@ export default function ResultPage() {
       {/* Header */}
       <header className="bg-white border-b border-border-subtle">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="text-lg font-bold text-navy-900">
-            Rotaract <span className="text-primary-600">EOI</span>
+          <Link to="/" className="flex items-center gap-2 text-lg font-bold text-navy-900">
+            <img src="/year-theme-logo.png" alt="Year Theme" className="h-8 w-auto" />
+            Rotaract<span className="text-primary-600">3234</span>
           </Link>
         </div>
       </header>
@@ -206,9 +207,7 @@ export default function ResultPage() {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
-            <HiOutlineCheckCircle className="w-8 h-8 text-emerald-600" />
-          </div>
+          <img src="/year-theme-logo.png" alt="Rotaract 3234" className="h-16 sm:h-20 w-auto mx-auto mb-4" />
           <h1 className="text-3xl sm:text-4xl font-extrabold text-navy-950">
             Application Submitted!
           </h1>
@@ -312,7 +311,7 @@ export default function ResultPage() {
               ))}
             </div>
             <p className="mt-4 text-xs text-navy-500 leading-relaxed">
-              <strong>Please note:</strong> These suggestions are intended to give you an insight into the roles that may align well with your strengths. Selecting a suggested position does not guarantee a confirmed District Official posting. All submissions will undergo a dedicated screening process, and the final decision rests with the District Rotaract Representative.
+              <strong>Please note:</strong> These suggestions are intended to give you an insight into the roles that may align well with your strengths. Selecting a suggested position does not guarantee a confirmed District Official posting. All submissions will undergo a dedicated screening process, and the final decision rests with the District Core Team.
             </p>
           </motion.section>
         )}

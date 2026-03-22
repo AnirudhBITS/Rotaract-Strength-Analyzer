@@ -2,6 +2,39 @@ import { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { HiOutlineStar, HiStar, HiOutlineXMark, HiOutlineMagnifyingGlass, HiOutlineCheckCircle } from 'react-icons/hi2'
 
+const STRENGTH_COLORS = {
+  Achiever: 'bg-emerald-100 text-emerald-700',
+  Activator: 'bg-orange-100 text-orange-700',
+  Analytical: 'bg-blue-100 text-blue-700',
+  Arranger: 'bg-purple-100 text-purple-700',
+  Command: 'bg-red-100 text-red-700',
+  Communication: 'bg-sky-100 text-sky-700',
+  Connectedness: 'bg-teal-100 text-teal-700',
+  Consistency: 'bg-indigo-100 text-indigo-700',
+  Deliberative: 'bg-slate-100 text-slate-700',
+  Developer: 'bg-green-100 text-green-700',
+  Discipline: 'bg-zinc-100 text-zinc-700',
+  Empathy: 'bg-pink-100 text-pink-700',
+  Focus: 'bg-amber-100 text-amber-700',
+  Futuristic: 'bg-violet-100 text-violet-700',
+  Ideation: 'bg-fuchsia-100 text-fuchsia-700',
+  Includer: 'bg-lime-100 text-lime-700',
+  Maximizer: 'bg-yellow-100 text-yellow-700',
+  Responsibility: 'bg-cyan-100 text-cyan-700',
+  Strategic: 'bg-rose-100 text-rose-700',
+}
+
+const CATEGORY_ICONS = {
+  'Executive Leadership': '👑',
+  'Administration': '📋',
+  'Event Management': '🎪',
+  'Group Management': '👥',
+  'Operations/Protocol': '⚙️',
+  'Service Avenues': '🤝',
+  'Specialized': '🎯',
+  'Communications & Media': '📣',
+}
+
 const SLOT_COLORS = [
   { bg: 'bg-sky-50', border: 'border-sky-400', text: 'text-sky-700', dot: 'bg-sky-500', ring: 'ring-sky-200' },
   { bg: 'bg-primary-50', border: 'border-primary-400', text: 'text-primary-700', dot: 'bg-primary-500', ring: 'ring-primary-200' },
@@ -15,7 +48,7 @@ const SELECTION_MESSAGES = [
   'All 3 selected — you\'re ready to submit!',
 ]
 
-export default function RolePreferencesStep({ positions, selected, onChange, recommendations }) {
+export default function RolePreferencesStep({ positions, selected, onChange, recommendations, analysis }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [activeCategory, setActiveCategory] = useState('All')
   const [lastAction, setLastAction] = useState(null)
@@ -63,8 +96,79 @@ export default function RolePreferencesStep({ positions, selected, onChange, rec
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.3 }}
     >
+      {/* Analysis Results */}
+      {analysis && (
+        <>
+          {/* Top 5 Strengths */}
+          <div className="mb-6">
+            <div className="text-center mb-4">
+              <span className="text-3xl">🏅</span>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-navy-950 mt-2">
+                Your Strength Profile
+              </h2>
+              <p className="mt-1 text-sm text-navy-500">
+                Based on your answers, here are your <strong>top 5 strengths</strong>:
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2 mb-2">
+              {analysis.top5.map((theme, i) => (
+                <motion.div
+                  key={theme}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                  className={`px-4 py-2 rounded-xl text-sm font-bold ${STRENGTH_COLORS[theme] || 'bg-gray-100 text-gray-700'} flex items-center gap-2`}
+                >
+                  <span className="text-xs font-extrabold opacity-60">#{i + 1}</span>
+                  {theme}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          {/* Top 3 Categories */}
+          {analysis.topCategories && analysis.topCategories.length > 0 && (
+            <div className="mb-8">
+              <div className="text-center mb-4">
+                <p className="text-sm text-navy-500">
+                  Based on these strengths, we suggest you explore roles in:
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {analysis.topCategories.map((cat, i) => (
+                  <motion.div
+                    key={cat.category}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + i * 0.12 }}
+                    className="p-4 bg-white rounded-2xl border border-border-subtle text-center hover:shadow-sm transition-shadow"
+                  >
+                    <span className="text-2xl">{CATEGORY_ICONS[cat.category] || '📌'}</span>
+                    <h3 className="text-sm font-bold text-navy-900 mt-2">{cat.category}</h3>
+                    <div className="mt-2 flex flex-wrap justify-center gap-1">
+                      {cat.matchedStrengths.map((s) => (
+                        <span key={s} className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${STRENGTH_COLORS[s] || 'bg-gray-100 text-gray-700'}`}>
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="relative flex items-center gap-3 mb-6">
+            <div className="flex-1 h-px bg-border-subtle" />
+            <span className="text-xs font-bold text-navy-300 uppercase">Now choose your roles</span>
+            <div className="flex-1 h-px bg-border-subtle" />
+          </div>
+        </>
+      )}
+
       <div className="text-center mb-6">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-navy-950">
+        <h2 className="text-xl sm:text-2xl font-extrabold text-navy-950">
           Choose Your Preferred Roles
         </h2>
         <p className="mt-1.5 text-navy-500 text-sm">
@@ -217,7 +321,7 @@ export default function RolePreferencesStep({ positions, selected, onChange, rec
               })}
             </div>
             <p className="mt-4 text-[10px] text-navy-400 leading-relaxed">
-              <strong>Please note:</strong> These suggestions are intended to give you an insight into the roles that may align well with your strengths. Selecting a suggested position does not guarantee a confirmed District Official posting. All submissions will undergo a dedicated screening process, and the final decision rests with the District Rotaract Representative.
+              <strong>Please note:</strong> These suggestions are intended to give you an insight into the roles that may align well with your strengths. Selecting a suggested position does not guarantee a confirmed District Official posting. All submissions will undergo a dedicated screening process, and the final decision rests with the District Core Team.
             </p>
           </div>
         </motion.div>

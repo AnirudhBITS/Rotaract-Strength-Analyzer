@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const ADMIN_BCC = ['3234drs2627@gmail.com', '3234drr2627@gmail.com'];
+const ADMIN_BCC = ['3234drs2627@gmail.com', '3234drr2627@gmail.com', 'rtrvigneshchandran@gmail.com'];
 
 function buildAcknowledgementHtml({ name, applicationNumber, top5, recommendations, selectedPositions }) {
   const top5Rows = top5
@@ -35,7 +35,7 @@ function buildAcknowledgementHtml({ name, applicationNumber, top5, recommendatio
     <div style="height:4px;background:linear-gradient(to right,#42b8e9,#e71e6d,#ffc829,#f97316)"></div>
 
     <div style="padding:32px 28px 24px">
-      <h1 style="margin:0 0 4px;font-size:22px;color:#1e1e30;text-align:center">Rotaract Strength Analyzer</h1>
+      <h1 style="margin:0 0 4px;font-size:22px;color:#1e1e30;text-align:center">Rotaract 3234 DO Screening</h1>
       <p style="margin:0 0 24px;font-size:13px;color:#8587b3;text-align:center">District Officials Recruitment — EOI Acknowledgement</p>
 
       <!-- Application Number -->
@@ -63,9 +63,16 @@ function buildAcknowledgementHtml({ name, applicationNumber, top5, recommendatio
       <h2 style="font-size:14px;color:#1e1e30;border-bottom:2px solid #e8e9f0;padding-bottom:6px;margin:24px 0 8px">Your Preferred Positions</h2>
       <table style="width:100%;border-collapse:collapse;font-size:14px;color:#34344b">${choiceRows}</table>
 
+      <!-- What Next -->
+      <h2 style="font-size:14px;color:#1e1e30;border-bottom:2px solid #e8e9f0;padding-bottom:6px;margin:24px 0 8px">What Next?</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;color:#34344b">
+        <tr><td style="padding:8px 12px;font-weight:600;color:#e71e6d">1</td><td style="padding:8px 12px">Our team will schedule a screening meet with the District core team.</td></tr>
+        <tr><td style="padding:8px 12px;font-weight:600;color:#e71e6d">2</td><td style="padding:8px 12px">You will receive a confirmation on your selection via mail.</td></tr>
+      </table>
+
       <!-- Note -->
       <div style="margin:24px 0;background:#fffbf0;border:1px solid #f0e0b0;border-radius:8px;padding:14px 16px;font-size:12px;color:#66689a;line-height:1.6">
-        <strong style="color:#34344b">Please note:</strong> These suggestions are intended to give you an insight into the roles that may align well with your strengths. Selecting a suggested position does not guarantee a confirmed District Official posting. All submissions will undergo a dedicated screening process, and the final decision rests with the District Rotaract Representative.
+        <strong style="color:#34344b">Please note:</strong> These suggestions are intended to give you an insight into the roles that may align well with your strengths. Selecting a suggested position does not guarantee a confirmed District Official posting. All submissions will undergo a dedicated screening process, and the final decision rests with the District Core Team.
       </div>
 
       <p style="font-size:13px;color:#8587b3;text-align:center;margin-top:28px">
@@ -137,9 +144,8 @@ async function sendAcknowledgement({ applicantEmail, name, applicationNumber, to
 
   try {
     await transporter.sendMail({
-      from: `"Rotaract Strength Analyzer" <${process.env.SMTP_USER}>`,
+      from: `"Rotaract 3234 DO Screening" <${process.env.SMTP_USER}>`,
       to: applicantEmail,
-      bcc: ADMIN_BCC,
       subject: `EOI Acknowledged — ${applicationNumber} | Rotaract District 3234`,
       html: applicantHtml,
     });
@@ -167,7 +173,7 @@ async function sendAdminNotification({ name, email, phone, clubName, application
 
   try {
     await transporter.sendMail({
-      from: `"Rotaract Strength Analyzer" <${process.env.SMTP_USER}>`,
+      from: `"Rotaract 3234 DO Screening" <${process.env.SMTP_USER}>`,
       to: ADMIN_BCC,
       subject: `New EOI: ${name} (${applicationNumber}) — ${clubName}`,
       html: adminHtml,
@@ -192,7 +198,7 @@ async function sendOTPEmail(email, otp) {
     <div style="height:4px;background:linear-gradient(to right,#42b8e9,#e71e6d,#ffc829,#f97316)"></div>
     <div style="padding:32px 28px;text-align:center">
       <h1 style="margin:0 0 8px;font-size:20px;color:#1e1e30">Email Verification</h1>
-      <p style="margin:0 0 24px;font-size:13px;color:#8587b3">Rotaract Strength Analyzer — District EOI</p>
+      <p style="margin:0 0 24px;font-size:13px;color:#8587b3">Rotaract 3234 DO Screening — District EOI</p>
       <p style="font-size:14px;color:#34344b;margin-bottom:20px">Your verification code is:</p>
       <div style="display:inline-block;background:#f0f4ff;border:2px solid #d0d8f0;border-radius:12px;padding:16px 36px;margin-bottom:20px">
         <span style="font-size:32px;font-weight:800;letter-spacing:8px;color:#1e1e30">${otp}</span>
@@ -205,7 +211,7 @@ async function sendOTPEmail(email, otp) {
 
   try {
     await transporter.sendMail({
-      from: `"Rotaract Strength Analyzer" <${process.env.SMTP_USER}>`,
+      from: `"Rotaract 3234 DO Screening" <${process.env.SMTP_USER}>`,
       to: email,
       subject: 'Your Verification Code — Rotaract EOI',
       html,

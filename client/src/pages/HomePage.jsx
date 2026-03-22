@@ -68,8 +68,10 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className="flex flex-col items-center mb-8"
           >
-            <span className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold tracking-widest uppercase text-primary-700 bg-primary-50 rounded-full border border-primary-100 mb-8">
+            <img src="/year-theme-logo.png" alt="Let's Unite Together" className="h-20 sm:h-24 w-auto mb-4" />
+            <span className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold tracking-widest uppercase text-primary-700 bg-primary-50 rounded-full border border-primary-100">
               Rotary Year 2025-26
             </span>
           </motion.div>
@@ -209,7 +211,7 @@ export default function HomePage() {
       <footer className="bg-navy-950">
         <div className="h-1 bg-gradient-to-r from-sky-400 via-primary-500 via-gold-400 to-accent-500" />
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-white/60 font-medium">Rotaract District Strength Analyzer</p>
+          <p className="text-sm text-white/60 font-medium">Rotaract 3234 DO Screening</p>
           <p className="text-sm text-white/40">
             Let's <span className="text-primary-400 font-bold">Unite</span> Together &middot; 2025-26
           </p>

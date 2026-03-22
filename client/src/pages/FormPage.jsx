@@ -44,13 +44,14 @@ export default function FormPage() {
   const [responses, setResponses] = useState(draft?.responses || {})
   const [selectedPositions, setSelectedPositions] = useState(draft?.selectedPositions || [])
   const [recommendations, setRecommendations] = useState(draft?.recommendations || null)
+  const [analysisResult, setAnalysisResult] = useState(draft?.analysisResult || null)
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
   const [biodataReady, setBiodataReady] = useState(draft?.step > 1 || false)
 
   // Persist form state to sessionStorage
   useEffect(() => {
-    saveDraft({ step, biodata, responses, selectedPositions, recommendations })
+    saveDraft({ step, biodata, responses, selectedPositions, recommendations, analysisResult })
   }, [step, biodata, responses, selectedPositions, recommendations])
 
   useEffect(() => {
@@ -155,6 +156,14 @@ export default function FormPage() {
       }))
       const analysis = analyzeLocally(formattedResponses, questions)
       setRecommendations(getTopPositions(analysis.recommendations, positions))
+      setAnalysisResult({
+        top5: analysis.top5,
+        topCategories: analysis.recommendations.slice(0, 3).map((r) => ({
+          category: r.category,
+          matchedStrengths: r.matchedStrengths,
+          matchScore: r.matchScore,
+        })),
+      })
       setStep(3)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
@@ -228,8 +237,9 @@ export default function FormPage() {
       {/* Header */}
       <header className="bg-white border-b border-border-subtle sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="text-lg font-bold text-navy-900 font-[var(--font-display)]">
-            Rotaract <span className="text-primary-600">EOI</span>
+          <Link to="/" className="flex items-center gap-2 text-lg font-bold text-navy-900 font-[var(--font-display)]">
+            <img src="/year-theme-logo.png" alt="Year Theme" className="h-8 w-auto" />
+            Rotaract<span className="text-primary-600">3234</span>
           </Link>
           <span className="text-sm text-navy-500">District Officials Recruitment</span>
         </div>
@@ -255,6 +265,24 @@ export default function FormPage() {
               questions={questions}
               responses={responses}
               onChange={setResponses}
+              onComplete={() => {
+                const formattedResponses = Object.entries(responses).map(([qId, opt]) => ({
+                  questionId: parseInt(qId, 10),
+                  selectedOption: opt,
+                }))
+                const analysis = analyzeLocally(formattedResponses, questions)
+                setRecommendations(getTopPositions(analysis.recommendations, positions))
+                setAnalysisResult({
+                  top5: analysis.top5,
+                  topCategories: analysis.recommendations.slice(0, 3).map((r) => ({
+                    category: r.category,
+                    matchedStrengths: r.matchedStrengths,
+                    matchScore: r.matchScore,
+                  })),
+                })
+                setStep(3)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
             />
           )}
           {step === 3 && (
@@ -264,6 +292,7 @@ export default function FormPage() {
               selected={selectedPositions}
               onChange={setSelectedPositions}
               recommendations={recommendations}
+              analysis={analysisResult}
             />
           )}
         </AnimatePresence>

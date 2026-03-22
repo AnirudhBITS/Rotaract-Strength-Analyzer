@@ -59,7 +59,7 @@ export default function ApplicantDetail() {
         setData(res)
         setStatus(res.applicant.status)
         setNotes(res.applicant.admin_notes || '')
-      } catch {
+      } catch (e) {
         toast.error('Failed to load applicant')
         navigate('/admin')
       } finally {
@@ -74,7 +74,7 @@ export default function ApplicantDetail() {
     try {
       await adminApi.updateStatus(id, { status, adminNotes: notes })
       toast.success('Status updated')
-    } catch {
+    } catch (e) {
       toast.error('Update failed')
     } finally {
       setSaving(false)

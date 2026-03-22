@@ -20,7 +20,7 @@ export default function AdminLogin() {
       localStorage.setItem('admin_info', JSON.stringify(data.admin))
       toast.success(`Welcome, ${data.admin.name}`)
       navigate('/admin')
-    } catch {
+    } catch (e) {
       toast.error('Invalid credentials')
     } finally {
       setLoading(false)

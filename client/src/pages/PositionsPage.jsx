@@ -43,7 +43,7 @@ export default function PositionsPage() {
       ])
       setPositions(posRes.data.positions)
       setSummary(sumRes.data)
-    } catch {
+    } catch (e) {
       toast.error('Failed to load positions')
     } finally {
       setLoading(false)

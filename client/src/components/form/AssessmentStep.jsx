@@ -1,48 +1,54 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-// Motivational messages shown randomly after answering
+// Motivational messages shown after answering
 const ENCOURAGEMENTS = [
-  'Great pick!', 'Nice instinct!', 'You got this!', 'Keep going!',
-  'Awesome!', 'Good choice!', 'On fire!', 'Fantastic!', 'Well done!',
-  'You\'re crushing it!', 'Brilliant!', 'Strong choice!', 'Love it!',
+  { text: 'Great pick!', emoji: '👏' },
+  { text: 'Nice instinct!', emoji: '🎯' },
+  { text: 'You got this!', emoji: '💪' },
+  { text: 'Keep going!', emoji: '🚀' },
+  { text: 'Awesome!', emoji: '⭐' },
+  { text: 'Good choice!', emoji: '✅' },
+  { text: 'On fire!', emoji: '🔥' },
+  { text: 'Fantastic!', emoji: '🌟' },
+  { text: 'Well done!', emoji: '🙌' },
+  { text: 'Crushing it!', emoji: '💥' },
+  { text: 'Brilliant!', emoji: '✨' },
+  { text: 'Strong choice!', emoji: '🏆' },
+  { text: 'Love it!', emoji: '❤️' },
 ]
 
-// Milestone celebrations
+// Milestone celebrations with fun facts
 const MILESTONES = {
   5: {
     emoji: '🎯',
     title: '25% Complete!',
     subtitle: 'Great start! You\'re getting into the flow.',
     color: 'from-sky-400 to-sky-500',
+    funFact: 'Rotaract has members in over 180 countries worldwide!',
   },
   10: {
     emoji: '🔥',
     title: 'Halfway There!',
     subtitle: 'You\'re doing amazing. Keep the momentum going!',
     color: 'from-primary-400 to-primary-500',
+    funFact: 'The word "Rotaract" combines "Rotary" and "Action" — and you\'re all action right now!',
   },
   15: {
     emoji: '⚡',
     title: '75% Done!',
     subtitle: 'Almost there! Just 5 more questions to go.',
     color: 'from-gold-400 to-gold-500',
+    funFact: 'Rotaract was founded in 1968 in Charlotte, North Carolina. That\'s over 55 years of service!',
   },
   20: {
     emoji: '🏆',
     title: 'All Done!',
     subtitle: 'You\'ve completed the assessment! Click Continue to see your results.',
     color: 'from-accent-400 to-accent-500',
+    funFact: 'There are over 250,000 Rotaractors globally — and you\'re one of them making a difference!',
   },
 }
-
-// Fun facts shown between milestones
-const FUN_FACTS = [
-  'Rotaract has members in over 180 countries worldwide.',
-  'The word "Rotaract" combines "Rotary" and "Action".',
-  'Rotaract was founded in 1968 in Charlotte, North Carolina.',
-  'There are over 250,000 Rotaractors globally.',
-]
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D']
 const OPTION_COLORS = [
@@ -123,14 +129,13 @@ function StreakFlame({ streak }) {
   )
 }
 
-export default function AssessmentStep({ questions, responses, onChange }) {
+export default function AssessmentStep({ questions, responses, onChange, onComplete }) {
   const [currentQ, setCurrentQ] = useState(0)
   const [direction, setDirection] = useState(1)
   const [encouragement, setEncouragement] = useState(null)
   const [milestone, setMilestone] = useState(null)
   const [streak, setStreak] = useState(0)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [funFact, setFunFact] = useState(null)
 
   const question = questions[currentQ]
   const totalQ = questions.length
@@ -186,21 +191,6 @@ export default function AssessmentStep({ questions, responses, onChange }) {
       return // Don't auto-advance during milestone
     }
 
-    // Show fun fact occasionally (at questions 3, 8, 13)
-    if ([3, 8, 13].includes(newAnswered) && !wasAlreadyAnswered) {
-      const fact = FUN_FACTS[Math.floor(Math.random() * FUN_FACTS.length)]
-      setFunFact(fact)
-      setTimeout(() => {
-        setFunFact(null)
-        // Then advance
-        if (currentQ < totalQ - 1) {
-          setDirection(1)
-          setCurrentQ((prev) => prev + 1)
-        }
-      }, 2200)
-      return
-    }
-
     // Auto-advance
     if (currentQ < totalQ - 1) {
       setTimeout(() => {
@@ -212,7 +202,10 @@ export default function AssessmentStep({ questions, responses, onChange }) {
 
   const dismissMilestone = () => {
     setMilestone(null)
-    // Advance to next question if not at end
+    if (answered >= totalQ && onComplete) {
+      onComplete()
+      return
+    }
     if (currentQ < totalQ - 1 && answered < totalQ) {
       setDirection(1)
       setCurrentQ((prev) => prev + 1)
@@ -303,27 +296,13 @@ export default function AssessmentStep({ questions, responses, onChange }) {
       <AnimatePresence>
         {encouragement && (
           <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.8 }}
-            className="absolute top-20 left-1/2 -translate-x-1/2 z-40 px-4 py-2 bg-navy-900 text-white text-sm font-bold rounded-full shadow-lg"
-          >
-            {encouragement}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Fun Fact Toast */}
-      <AnimatePresence>
-        {funFact && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="mb-4 p-4 bg-sky-50 border border-sky-200 rounded-2xl"
+            exit={{ opacity: 0, scale: 0.5 }}
+            className="fixed top-24 left-1/2 -translate-x-1/2 z-40 px-6 py-3 bg-navy-900 text-white rounded-2xl shadow-xl flex items-center gap-2"
           >
-            <p className="text-xs font-bold text-sky-600 mb-1">💡 Did you know?</p>
-            <p className="text-sm text-sky-800">{funFact}</p>
+            <span className="text-2xl">{encouragement.emoji}</span>
+            <span className="text-base font-bold">{encouragement.text}</span>
           </motion.div>
         )}
       </AnimatePresence>
@@ -377,10 +356,22 @@ export default function AssessmentStep({ questions, responses, onChange }) {
                 {milestone.subtitle}
               </motion.p>
 
+              {milestone.funFact && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="mt-4 p-3 bg-sky-50 border border-sky-100 rounded-xl text-left"
+                >
+                  <p className="text-[10px] font-bold text-sky-500 uppercase tracking-wider mb-1">💡 Did you know?</p>
+                  <p className="text-xs text-sky-800 leading-relaxed">{milestone.funFact}</p>
+                </motion.div>
+              )}
+
               <motion.button
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.6 }}
                 onClick={dismissMilestone}
                 className={`mt-6 px-8 py-3 text-sm font-bold text-white rounded-2xl bg-gradient-to-r ${milestone.color} shadow-lg transition-transform hover:scale-105 active:scale-95`}
               >
