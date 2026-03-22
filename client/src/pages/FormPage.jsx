@@ -20,10 +20,7 @@ const INITIAL_BIODATA = {
 const SESSION_KEY = 'rsa_form_draft'
 
 function loadDraft() {
-  try {
-    const raw = sessionStorage.getItem(SESSION_KEY)
-    return raw ? JSON.parse(raw) : null
-  } catch (e) { return null }
+  return null
 }
 
 function saveDraft(data) {
