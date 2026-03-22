@@ -57,26 +57,31 @@ export default function FormPage() {
   }, [step, biodata, responses, selectedPositions, recommendations])
 
   useEffect(() => {
+    const API = import.meta.env.VITE_API_URL || 'https://rotaract3234strengthanalyser-backend.blackitechs.org/api'
+
     async function fetchData() {
       const errors = []
 
       try {
-        const qRes = await applicationApi.getQuestions()
-        setQuestions(qRes.data.questions)
+        const res = await fetch(API + '/application/questions')
+        const json = await res.json()
+        setQuestions(json.questions)
       } catch (e) {
         errors.push('questions')
       }
 
       try {
-        const pRes = await applicationApi.getPositions()
-        setPositions(pRes.data.positions)
+        const res = await fetch(API + '/application/positions')
+        const json = await res.json()
+        setPositions(json.positions)
       } catch (e) {
         errors.push('positions')
       }
 
       try {
-        const cRes = await applicationApi.getClubs()
-        setClubs(cRes.data.clubs)
+        const res = await fetch(API + '/application/clubs')
+        const json = await res.json()
+        setClubs(json.clubs)
       } catch (e) {
         errors.push('clubs')
       }
