@@ -251,10 +251,64 @@ async function getAllocationSummary(req, res, next) {
   }
 }
 
+async function searchApplicants(req, res, next) {
+  try {
+    const { q } = req.query;
+    if (!q || q.length < 2) {
+      return res.json({ applicants: [] });
+    }
+
+    const applicants = await db('applicants')
+      .select('id', 'name', 'email', 'club_name', 'application_number')
+      .where(function () {
+        this.where('name', 'like', `%${q}%`)
+          .orWhere('email', 'like', `%${q}%`)
+          .orWhere('club_name', 'like', `%${q}%`)
+          .orWhere('application_number', 'like', `%${q}%`);
+      })
+      .limit(10);
+
+    // Check existing allocations
+    const ids = applicants.map((a) => a.id);
+    const allocations = ids.length > 0
+      ? await db('allocations').whereIn('applicant_id', ids)
+      : [];
+    const allocMap = Object.fromEntries(allocations.map((a) => [a.applicant_id, a.position_id]));
+
+    const enriched = applicants.map((a) => ({
+      ...a,
+      allocated_to: allocMap[a.id] || null,
+      allocated_position_title: allocMap[a.id]
+        ? DISTRICT_POSITIONS.find((p) => p.id === allocMap[a.id])?.title || null
+        : null,
+    }));
+
+    res.json({ applicants: enriched });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getUnallocatedApplicants(req, res, next) {
+  try {
+    const applicants = await db('applicants')
+      .select('applicants.id', 'applicants.name', 'applicants.email', 'applicants.club_name', 'applicants.application_number')
+      .leftJoin('allocations', 'applicants.id', 'allocations.applicant_id')
+      .whereNull('allocations.id')
+      .orderBy('applicants.name', 'asc');
+
+    res.json({ applicants });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   getPositions,
   getPositionCandidates,
   allocateCandidate,
   deallocateCandidate,
   getAllocationSummary,
+  searchApplicants,
+  getUnallocatedApplicants,
 };

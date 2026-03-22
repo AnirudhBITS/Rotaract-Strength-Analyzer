@@ -5,12 +5,18 @@ const {
   submitApplication,
   getQuestions,
   getPositions,
+  checkDuplicate,
+  sendOTP,
+  verifyOTPHandler,
 } = require('../controllers/applicationController');
 
 const router = express.Router();
 
 router.get('/questions', getQuestions);
 router.get('/positions', getPositions);
+router.post('/check-duplicate', checkDuplicate);
+router.post('/send-otp', sendOTP);
+router.post('/verify-otp', verifyOTPHandler);
 
 router.post(
   '/submit',
@@ -29,9 +35,9 @@ router.post(
     body('biodata.willingToDonate').isBoolean().withMessage('Willing to donate must be true or false'),
     body('biodata.address').trim().notEmpty().withMessage('Address is required'),
     body('responses')
-      .isArray({ min: 32, max: 32 })
-      .withMessage('All 32 questions must be answered'),
-    body('responses.*.questionId').isInt({ min: 1, max: 32 }).withMessage('Invalid question ID'),
+      .isArray({ min: 20, max: 20 })
+      .withMessage('All 20 questions must be answered'),
+    body('responses.*.questionId').isInt({ min: 1, max: 20 }).withMessage('Invalid question ID'),
     body('responses.*.selectedOption')
       .isIn(['a', 'b', 'c', 'd'])
       .withMessage('Invalid option selected'),

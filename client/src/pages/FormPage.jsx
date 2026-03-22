@@ -7,7 +7,7 @@ import BiodataStep from '../components/form/BiodataStep'
 import AssessmentStep from '../components/form/AssessmentStep'
 import RolePreferencesStep from '../components/form/RolePreferencesStep'
 import { applicationApi } from '../api/client'
-import { analyzeLocally } from '../utils/localScoring'
+import { analyzeLocally, getTopPositions } from '../utils/localScoring'
 
 const INITIAL_BIODATA = {
   name: '', email: '', phone: '', secondaryPhone: '',
@@ -17,18 +17,43 @@ const INITIAL_BIODATA = {
   professionalPhoto: '', casualPhoto: '',
 }
 
+const SESSION_KEY = 'rsa_form_draft'
+
+function loadDraft() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+function saveDraft(data) {
+  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)) } catch {}
+}
+
+function clearDraft() {
+  try { sessionStorage.removeItem(SESSION_KEY) } catch {}
+}
+
 export default function FormPage() {
   const navigate = useNavigate()
-  const [step, setStep] = useState(1)
-  const [biodata, setBiodata] = useState(INITIAL_BIODATA)
+  const draft = loadDraft()
+
+  const [step, setStep] = useState(draft?.step || 1)
+  const [biodata, setBiodata] = useState(draft?.biodata || INITIAL_BIODATA)
   const [biodataErrors, setBiodataErrors] = useState({})
   const [questions, setQuestions] = useState([])
   const [positions, setPositions] = useState([])
-  const [responses, setResponses] = useState({})
-  const [selectedPositions, setSelectedPositions] = useState([])
-  const [recommendations, setRecommendations] = useState(null)
+  const [responses, setResponses] = useState(draft?.responses || {})
+  const [selectedPositions, setSelectedPositions] = useState(draft?.selectedPositions || [])
+  const [recommendations, setRecommendations] = useState(draft?.recommendations || null)
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [biodataReady, setBiodataReady] = useState(draft?.step > 1 || false)
+
+  // Persist form state to sessionStorage
+  useEffect(() => {
+    saveDraft({ step, biodata, responses, selectedPositions, recommendations })
+  }, [step, biodata, responses, selectedPositions, recommendations])
 
   useEffect(() => {
     async function fetchData() {
@@ -64,17 +89,38 @@ export default function FormPage() {
     return Object.keys(errors).length === 0
   }
 
-  const handleNext = () => {
+  const [checking, setChecking] = useState(false)
+
+  const handleNext = async () => {
     if (step === 1) {
       if (!validateBiodata()) {
         toast.error('Please fill all required fields')
         return
       }
+
+      // Check for duplicate before proceeding
+      setChecking(true)
+      try {
+        await applicationApi.checkDuplicate({
+          email: biodata.email,
+          phone: biodata.phone,
+        })
+      } catch (err) {
+        if (err.response?.status === 409 && err.response?.data?.duplicate) {
+          toast.error(err.response.data.message)
+        } else {
+          toast.error('Could not verify application. Please try again.')
+        }
+        setChecking(false)
+        return
+      }
+      setChecking(false)
+
       setStep(2)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else if (step === 2) {
-      if (Object.keys(responses).length < 32) {
-        toast.error(`Please answer all 32 questions (${Object.keys(responses).length}/32 completed)`)
+      if (Object.keys(responses).length < 20) {
+        toast.error(`Please answer all 20 questions (${Object.keys(responses).length}/20 completed)`)
         return
       }
       // Calculate local recommendations before showing step 3
@@ -82,8 +128,8 @@ export default function FormPage() {
         questionId: parseInt(qId, 10),
         selectedOption: opt,
       }))
-      const analysis = analyzeLocally(formattedResponses, questions, positions)
-      setRecommendations(analysis.recommendations)
+      const analysis = analyzeLocally(formattedResponses, questions)
+      setRecommendations(getTopPositions(analysis.recommendations, positions))
       setStep(3)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
@@ -119,14 +165,18 @@ export default function FormPage() {
         preferredPositions: selectedPositions,
       })
 
+      clearDraft()
+      try { sessionStorage.removeItem('rsa_biodata_state') } catch {}
       toast.success('Application submitted successfully!')
       navigate('/result', {
         state: {
           analysis: data.analysis,
           name: biodata.name,
+          applicationNumber: data.applicationNumber,
           selectedPositions: selectedPositions.map(
             (id) => positions.find((p) => p.id === id)?.title
           ),
+          recommendedPositions: recommendations,
         },
       })
     } catch (err) {
@@ -170,6 +220,7 @@ export default function FormPage() {
               data={biodata}
               onChange={setBiodata}
               errors={biodataErrors}
+              onSectionChange={(index, total) => setBiodataReady(index === total - 1)}
             />
           )}
           {step === 2 && (
@@ -202,12 +253,22 @@ export default function FormPage() {
           </button>
 
           {step < 3 ? (
-            <button
-              onClick={handleNext}
-              className="px-8 py-3 text-sm font-semibold text-white bg-primary-600 rounded-xl shadow-sm transition-all duration-200 hover:bg-primary-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
-            >
-              Continue
-            </button>
+            (step !== 1 || biodataReady) ? (
+              <button
+                onClick={handleNext}
+                disabled={checking}
+                className="px-8 py-3 text-sm font-semibold text-white bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl shadow-lg shadow-primary-300/30 transition-all duration-200 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+              >
+                {checking ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Verifying...
+                  </span>
+                ) : (
+                  'Continue →'
+                )}
+              </button>
+            ) : <div />
           ) : (
             <button
               onClick={handleSubmit}

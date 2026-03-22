@@ -5,8 +5,9 @@ import toast from 'react-hot-toast'
 import {
   HiOutlineArrowLeft, HiOutlineCheckCircle, HiOutlineXMark,
   HiOutlineUserPlus, HiOutlineExclamationTriangle, HiOutlineStar,
+  HiOutlineMagnifyingGlass,
 } from 'react-icons/hi2'
-import { allocationApi } from '../api/client'
+import { allocationApi, getFileUrl } from '../api/client'
 
 const STRENGTH_COLORS = {
   Achiever: 'bg-emerald-100 text-emerald-700',
@@ -36,6 +37,12 @@ export default function PositionDetail() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [allocating, setAllocating] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+  const [searching, setSearching] = useState(false)
+  const [unallocated, setUnallocated] = useState([])
+  const [loadingUnallocated, setLoadingUnallocated] = useState(false)
+  const [showDropdown, setShowDropdown] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token')
@@ -45,8 +52,12 @@ export default function PositionDetail() {
 
   async function fetchData() {
     try {
-      const { data: res } = await allocationApi.getCandidates(positionId)
-      setData(res)
+      const [candidatesRes, unallocRes] = await Promise.all([
+        allocationApi.getCandidates(positionId),
+        allocationApi.getUnallocated(),
+      ])
+      setData(candidatesRes.data)
+      setUnallocated(unallocRes.data.applicants)
     } catch {
       toast.error('Failed to load position details')
       navigate('/admin/positions')
@@ -80,6 +91,17 @@ export default function PositionDetail() {
     } catch {
       toast.error('Failed to remove allocation')
     }
+  }
+
+  const handleSearch = async (q) => {
+    setSearchQuery(q)
+    if (q.length < 2) { setSearchResults([]); return }
+    setSearching(true)
+    try {
+      const { data: res } = await allocationApi.searchApplicants(q)
+      setSearchResults(res.applicants)
+    } catch { setSearchResults([]) }
+    finally { setSearching(false) }
   }
 
   if (loading || !data) {
@@ -197,6 +219,102 @@ export default function PositionDetail() {
             </div>
           )}
         </section>
+
+        {/* Allocate Any Applicant */}
+        {!currentAllocation && (
+          <section className="mt-10 pt-8 border-t border-border-subtle">
+            <div className="flex items-center gap-2 mb-4">
+              <HiOutlineUserPlus className="w-5 h-5 text-navy-500" />
+              <h2 className="text-lg font-bold text-navy-950">Allocate Any Applicant</h2>
+            </div>
+
+            {/* Quick Pick — Unallocated Dropdown */}
+            <div className="mb-5">
+              <label className="block text-sm font-semibold text-navy-700 mb-1.5">
+                Quick Pick — Unallocated Applicants ({unallocated.length})
+              </label>
+              <div className="flex gap-2">
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const id = parseInt(e.target.value, 10)
+                    if (!id) return
+                    const applicant = unallocated.find((a) => a.id === id)
+                    if (applicant) handleAllocate(applicant.id, applicant.name)
+                  }}
+                  className="flex-1 px-4 py-3 text-sm text-navy-900 bg-white border border-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                >
+                  <option value="">Select an applicant to allocate...</option>
+                  {unallocated.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name} — {a.club_name} ({a.application_number || a.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Or Search */}
+            <div className="relative flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-border-subtle" />
+              <span className="text-xs font-bold text-navy-300 uppercase">or search</span>
+              <div className="flex-1 h-px bg-border-subtle" />
+            </div>
+
+            <div className="relative mb-4">
+              <HiOutlineMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-navy-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder="Search by name, email, club, or application number..."
+                className="w-full pl-10 pr-4 py-3 text-sm text-navy-900 bg-white border border-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 placeholder:text-navy-400"
+              />
+              {searching && (
+                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-navy-200 border-t-primary-500 rounded-full animate-spin" />
+              )}
+            </div>
+
+            {searchResults.length > 0 && (
+              <div className="space-y-2">
+                {searchResults.map((a) => (
+                  <div key={a.id} className={`flex items-center justify-between p-4 bg-white rounded-xl border border-border-subtle ${a.allocated_to ? 'opacity-50' : 'hover:shadow-sm'}`}>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link to={`/admin/applicant/${a.id}`} className="text-sm font-bold text-navy-900 hover:text-primary-600">
+                          {a.name}
+                        </Link>
+                        {a.application_number && (
+                          <span className="text-xs font-mono text-navy-400">{a.application_number}</span>
+                        )}
+                        {a.allocated_to && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 flex items-center gap-1">
+                            <HiOutlineExclamationTriangle className="w-3 h-3" />
+                            Allocated: {a.allocated_position_title}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-navy-500 mt-0.5">{a.club_name} &middot; {a.email}</p>
+                    </div>
+                    {!a.allocated_to && (
+                      <button
+                        onClick={() => handleAllocate(a.id, a.name)}
+                        disabled={allocating === a.id}
+                        className="flex-shrink-0 ml-4 px-4 py-2 text-sm font-semibold text-white bg-primary-600 rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-50"
+                      >
+                        {allocating === a.id ? 'Allocating...' : 'Allocate'}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {searchQuery.length >= 2 && searchResults.length === 0 && !searching && (
+              <p className="text-sm text-navy-400 italic py-4">No applicants found for "{searchQuery}"</p>
+            )}
+          </section>
+        )}
       </main>
     </div>
   )
@@ -219,7 +337,7 @@ function CandidateCard({ candidate, preferenceLabel, onAllocate, allocating, isC
         <div className="flex items-start gap-4 flex-1">
           {candidate.professional_photo && (
             <img
-              src={candidate.professional_photo}
+              src={getFileUrl(candidate.professional_photo)}
               alt={candidate.name}
               className="w-12 h-12 rounded-xl object-cover border border-border-subtle flex-shrink-0"
             />

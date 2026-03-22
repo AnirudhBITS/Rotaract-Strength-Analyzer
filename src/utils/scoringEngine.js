@@ -84,8 +84,8 @@ function recommendRoles(top5, ranked) {
   }
 
   return categoryScores
-    .sort((a, b) => b.matchScore - a.matchScore)
-    .slice(0, 3);
+    .filter((c) => c.matchScore > 0)
+    .sort((a, b) => b.matchScore - a.matchScore);
 }
 
 /**

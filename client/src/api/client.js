@@ -1,9 +1,18 @@
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://rotaract3234strengthanalyser-backend.blackitechs.org/api';
+const BACKEND_URL = API_URL.replace(/\/api\/?$/, '');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://rotaract3234strengthanalyser-backend.blackitechs.org/api',
+  baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },
 });
+
+export const getFileUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${BACKEND_URL}${path}`;
+};
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('admin_token');
@@ -29,6 +38,9 @@ api.interceptors.response.use(
 export const applicationApi = {
   getQuestions: () => api.get('/application/questions'),
   getPositions: () => api.get('/application/positions'),
+  checkDuplicate: (data) => api.post('/application/check-duplicate', data),
+  sendOTP: (data) => api.post('/application/send-otp', data),
+  verifyOTP: (data) => api.post('/application/verify-otp', data),
   submit: (data) => api.post('/application/submit', data),
 };
 
@@ -48,7 +60,7 @@ export const adminApi = {
   getApplicants: (params) => api.get('/admin/applicants', { params }),
   getApplicant: (id) => api.get(`/admin/applicants/${id}`),
   updateStatus: (id, data) => api.patch(`/admin/applicants/${id}/status`, data),
-  exportAll: () => api.get('/admin/export'),
+  exportAll: () => api.get('/admin/export', { responseType: 'arraybuffer' }),
 };
 
 export const allocationApi = {
@@ -57,6 +69,8 @@ export const allocationApi = {
   getCandidates: (positionId) => api.get(`/allocation/positions/${positionId}/candidates`),
   allocate: (positionId, data) => api.post(`/allocation/positions/${positionId}/allocate`, data),
   deallocate: (positionId, applicantId) => api.delete(`/allocation/positions/${positionId}/deallocate/${applicantId}`),
+  searchApplicants: (q) => api.get('/allocation/search-applicants', { params: { q } }),
+  getUnallocated: () => api.get('/allocation/unallocated-applicants'),
 };
 
 export default api;

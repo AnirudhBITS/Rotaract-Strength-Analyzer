@@ -1,5 +1,5 @@
 /**
- * 32 Scenario-Based Assessment Questions
+ * 20 Scenario-Based Assessment Questions
  *
  * Each question maps to a primary strength theme and each answer option
  * scores across 2-3 themes. This cross-scoring approach ensures reliable
@@ -10,7 +10,7 @@
  */
 
 const ASSESSMENT_QUESTIONS = [
-  // ── ACHIEVER (Q1, Q2) ──────────────────────────────────────────
+  // ── ACHIEVER (Q1) ──────────────────────────────────────────
   {
     id: 1,
     theme: 'Achiever',
@@ -38,93 +38,39 @@ const ASSESSMENT_QUESTIONS = [
       },
     ],
   },
+
+  // ── ACTIVATOR (Q2) ─────────────────────────────────────────
   {
     id: 2,
-    theme: 'Achiever',
-    question: 'At the end of a busy week, how do you feel about your productivity?',
-    options: [
-      {
-        id: 'a',
-        text: 'I measure my week by tangible outcomes — if I got things done, I feel fulfilled.',
-        scores: { Achiever: 3, Focus: 2, Discipline: 1 },
-      },
-      {
-        id: 'b',
-        text: 'I feel best when the team collectively accomplished more than expected.',
-        scores: { Developer: 3, Includer: 2, Achiever: 1 },
-      },
-      {
-        id: 'c',
-        text: 'I reflect on what I learned and how I grew through the challenges.',
-        scores: { Futuristic: 3, Strategic: 2, Achiever: 1 },
-      },
-      {
-        id: 'd',
-        text: 'I focus on whether the quality of work met the highest standards.',
-        scores: { Maximizer: 3, Deliberative: 2, Achiever: 1 },
-      },
-    ],
-  },
-
-  // ── ACTIVATOR (Q3, Q4) ─────────────────────────────────────────
-  {
-    id: 3,
     theme: 'Activator',
-    question: 'A new community service idea comes up during a meeting. The team is still debating the details. What\'s your instinct?',
+    question: 'During a project discussion, your idea excites a few members, but most are still unsure. What would you do?',
     options: [
       {
         id: 'a',
-        text: 'Let\'s start with a small pilot right away — we\'ll learn more by doing than by discussing.',
+        text: 'I suggest starting with a small pilot to show how the idea can work in practice.',
         scores: { Activator: 3, Achiever: 2, Strategic: 1 },
       },
       {
         id: 'b',
-        text: 'I\'d want to research similar projects first to avoid mistakes others have made.',
+        text: 'I take time to research similar ideas and refine mine before pushing it further.',
         scores: { Deliberative: 3, Analytical: 2, Activator: 1 },
       },
       {
         id: 'c',
-        text: 'I\'d check if everyone in the team is genuinely excited before moving forward.',
+        text: 'I check with the team to see if there\'s enough interest before taking it ahead.',
         scores: { Empathy: 3, Includer: 2, Activator: 1 },
       },
       {
         id: 'd',
-        text: 'I\'d create a structured plan with timelines before we begin anything.',
+        text: 'I work on structuring the idea clearly with timelines before proposing it again.',
         scores: { Discipline: 3, Focus: 2, Arranger: 1 },
       },
     ],
   },
-  {
-    id: 4,
-    theme: 'Activator',
-    question: 'You spot a problem in how your district communicates with clubs. How do you respond?',
-    options: [
-      {
-        id: 'a',
-        text: 'I immediately try a new approach and see if it works better.',
-        scores: { Activator: 3, Command: 2, Ideation: 1 },
-      },
-      {
-        id: 'b',
-        text: 'I draft a proposal and present it to the leadership for approval.',
-        scores: { Communication: 3, Deliberative: 2, Activator: 1 },
-      },
-      {
-        id: 'c',
-        text: 'I talk to clubs first to understand their perspective on the issue.',
-        scores: { Empathy: 3, Connectedness: 2, Includer: 1 },
-      },
-      {
-        id: 'd',
-        text: 'I analyze what exactly is broken before suggesting any changes.',
-        scores: { Analytical: 3, Strategic: 2, Deliberative: 1 },
-      },
-    ],
-  },
 
-  // ── ANALYTICAL (Q5, Q6) ────────────────────────────────────────
+  // ── ANALYTICAL (Q3) ───────────────────────────────────────
   {
-    id: 5,
+    id: 3,
     theme: 'Analytical',
     question: 'Your district\'s membership numbers have been declining. How do you approach the problem?',
     options: [
@@ -150,37 +96,10 @@ const ASSESSMENT_QUESTIONS = [
       },
     ],
   },
-  {
-    id: 6,
-    theme: 'Analytical',
-    question: 'Someone proposes a big-budget district event. How do you evaluate it?',
-    options: [
-      {
-        id: 'a',
-        text: 'I want to see the numbers — projected costs, expected attendance, ROI, and past event data.',
-        scores: { Analytical: 3, Deliberative: 2, Discipline: 1 },
-      },
-      {
-        id: 'b',
-        text: 'I focus on the vision — if the concept is powerful enough, the logistics will follow.',
-        scores: { Futuristic: 3, Ideation: 2, Activator: 1 },
-      },
-      {
-        id: 'c',
-        text: 'I consider whether this event will truly benefit every club and member equally.',
-        scores: { Consistency: 3, Includer: 2, Empathy: 1 },
-      },
-      {
-        id: 'd',
-        text: 'I\'d back it if the right leader is chairing it — execution depends on people.',
-        scores: { Developer: 3, Command: 2, Responsibility: 1 },
-      },
-    ],
-  },
 
-  // ── ARRANGER (Q7, Q8) ──────────────────────────────────────────
+  // ── ARRANGER (Q4) ─────────────────────────────────────────
   {
-    id: 7,
+    id: 4,
     theme: 'Arranger',
     question: 'You\'re organizing a district event and three things go wrong simultaneously. How do you handle it?',
     options: [
@@ -202,12 +121,14 @@ const ASSESSMENT_QUESTIONS = [
       {
         id: 'd',
         text: 'I refer to the backup plan I prepared for exactly this kind of situation.',
-        scores: { Deliberative: 3, Discipline: 2, Strategic: 1 },
+        scores: { Deliberative: 3, Discipline: 2, Responsibility: 1 },
       },
     ],
   },
+
+  // ── ARRANGER (Q5) ─────────────────────────────────────────
   {
-    id: 8,
+    id: 5,
     theme: 'Arranger',
     question: 'You have a team of 10 volunteers with different skills. How do you assign tasks?',
     options: [
@@ -224,19 +145,19 @@ const ASSESSMENT_QUESTIONS = [
       {
         id: 'c',
         text: 'I let people volunteer for what they\'re passionate about.',
-        scores: { Empathy: 3, Developer: 2, Includer: 1 },
+        scores: { Includer: 3, Developer: 2, Connectedness: 1 },
       },
       {
         id: 'd',
         text: 'I assign the most critical tasks to the most proven people.',
-        scores: { Command: 3, Achiever: 2, Responsibility: 1 },
+        scores: { Maximizer: 3, Strategic: 2, Responsibility: 1 },
       },
     ],
   },
 
-  // ── COMMAND (Q9, Q10) ──────────────────────────────────────────
+  // ── COMMAND (Q6) ──────────────────────────────────────────
   {
-    id: 9,
+    id: 6,
     theme: 'Command',
     question: 'A meeting is going off-track with everyone talking over each other. What do you do?',
     options: [
@@ -262,44 +183,17 @@ const ASSESSMENT_QUESTIONS = [
       },
     ],
   },
-  {
-    id: 10,
-    theme: 'Command',
-    question: 'A club president is not performing their duties and it\'s affecting the group. How do you handle it?',
-    options: [
-      {
-        id: 'a',
-        text: 'I have a direct, honest conversation — they need to know the impact of their actions.',
-        scores: { Command: 3, Responsibility: 2, Communication: 1 },
-      },
-      {
-        id: 'b',
-        text: 'I try to understand their situation first — maybe they\'re going through something tough.',
-        scores: { Empathy: 3, Developer: 2, Connectedness: 1 },
-      },
-      {
-        id: 'c',
-        text: 'I offer to mentor them and help them improve their leadership skills.',
-        scores: { Developer: 3, Maximizer: 2, Includer: 1 },
-      },
-      {
-        id: 'd',
-        text: 'I document the issues and escalate to the appropriate district authority.',
-        scores: { Discipline: 3, Analytical: 2, Responsibility: 1 },
-      },
-    ],
-  },
 
-  // ── COMMUNICATION (Q11, Q12) ───────────────────────────────────
+  // ── COMMUNICATION (Q7) ────────────────────────────────────
   {
-    id: 11,
+    id: 7,
     theme: 'Communication',
     question: 'You need to get 50 clubs excited about an upcoming district initiative. What\'s your approach?',
     options: [
       {
         id: 'a',
         text: 'I craft a compelling story about why this initiative matters and present it passionately.',
-        scores: { Communication: 3, Maximizer: 2, Futuristic: 1 },
+        scores: { Communication: 3, Futuristic: 2, Maximizer: 1 },
       },
       {
         id: 'b',
@@ -309,7 +203,7 @@ const ASSESSMENT_QUESTIONS = [
       {
         id: 'c',
         text: 'I personally reach out to key club leaders and build grassroots momentum.',
-        scores: { Connectedness: 3, Developer: 2, Empathy: 1 },
+        scores: { Connectedness: 3, Developer: 2, Includer: 1 },
       },
       {
         id: 'd',
@@ -318,570 +212,302 @@ const ASSESSMENT_QUESTIONS = [
       },
     ],
   },
-  {
-    id: 12,
-    theme: 'Communication',
-    question: 'How do you prefer to share important updates with the district?',
-    options: [
-      {
-        id: 'a',
-        text: 'Through well-written, engaging messages that capture attention and inspire action.',
-        scores: { Communication: 3, Ideation: 2, Maximizer: 1 },
-      },
-      {
-        id: 'b',
-        text: 'Through structured reports with clear data and outcomes.',
-        scores: { Analytical: 3, Discipline: 2, Consistency: 1 },
-      },
-      {
-        id: 'c',
-        text: 'Through personal conversations — the human touch matters most.',
-        scores: { Empathy: 3, Connectedness: 2, Developer: 1 },
-      },
-      {
-        id: 'd',
-        text: 'Through creative visuals and social media that reach the widest audience.',
-        scores: { Ideation: 3, Communication: 2, Futuristic: 1 },
-      },
-    ],
-  },
 
-  // ── CONNECTEDNESS (Q13, Q14) ───────────────────────────────────
+  // ── CONNECTEDNESS (Q8) ────────────────────────────────────
   {
-    id: 13,
-    theme: 'Connectedness',
-    question: 'A small Rotaract club in a rural area feels disconnected from district activities. What do you do?',
-    options: [
-      {
-        id: 'a',
-        text: 'I reach out personally — every club matters, and they need to feel part of the larger family.',
-        scores: { Connectedness: 3, Includer: 2, Empathy: 1 },
-      },
-      {
-        id: 'b',
-        text: 'I create a buddy system pairing them with a stronger urban club.',
-        scores: { Developer: 3, Arranger: 2, Connectedness: 1 },
-      },
-      {
-        id: 'c',
-        text: 'I organize a virtual district event they can easily participate in.',
-        scores: { Ideation: 3, Activator: 2, Includer: 1 },
-      },
-      {
-        id: 'd',
-        text: 'I assign their GRR to check in weekly and report back on their progress.',
-        scores: { Responsibility: 3, Discipline: 2, Focus: 1 },
-      },
-    ],
-  },
-  {
-    id: 14,
+    id: 8,
     theme: 'Connectedness',
     question: 'What motivates you most about being part of Rotaract?',
     options: [
       {
         id: 'a',
-        text: 'The sense that we\'re all connected by something bigger — service above self isn\'t just a motto.',
-        scores: { Connectedness: 3, Futuristic: 2, Empathy: 1 },
+        text: 'Being part of something larger than myself and contributing to society.',
+        scores: { Connectedness: 3, Empathy: 2, Responsibility: 1 },
       },
       {
         id: 'b',
-        text: 'The opportunity to develop my leadership skills and help others grow.',
+        text: 'Developing my leadership and helping others grow.',
         scores: { Developer: 3, Maximizer: 2, Achiever: 1 },
       },
       {
         id: 'c',
-        text: 'The tangible impact we create through community service projects.',
-        scores: { Achiever: 3, Responsibility: 2, Connectedness: 1 },
+        text: 'Creating real impact through meaningful service projects.',
+        scores: { Achiever: 3, Futuristic: 2, Activator: 1 },
       },
       {
         id: 'd',
-        text: 'The network — connecting with driven individuals across clubs and districts.',
-        scores: { Communication: 3, Connectedness: 2, Strategic: 1 },
+        text: 'Building strong networks and relationships.',
+        scores: { Includer: 3, Communication: 2, Connectedness: 1 },
       },
     ],
   },
 
-  // ── CONSISTENCY (Q15, Q16) ─────────────────────────────────────
+  // ── CONSISTENCY (Q9) ──────────────────────────────────────
   {
-    id: 15,
+    id: 9,
     theme: 'Consistency',
-    question: 'Two clubs submit project proposals. One is from a well-known club, the other from a new small club. How do you evaluate them?',
+    question: 'Two clubs submit project proposals — one well-established and one relatively new. How do you evaluate them?',
     options: [
       {
         id: 'a',
-        text: 'Both get judged by the same criteria — fairness means no special treatment.',
-        scores: { Consistency: 3, Analytical: 2, Responsibility: 1 },
+        text: 'I ensure both are judged using the exact same criteria.',
+        scores: { Consistency: 3, Discipline: 2, Analytical: 1 },
       },
       {
         id: 'b',
-        text: 'I give the smaller club extra support to level the playing field.',
-        scores: { Developer: 3, Includer: 2, Empathy: 1 },
+        text: 'I give additional guidance to help the newer club compete fairly.',
+        scores: { Developer: 3, Empathy: 2, Includer: 1 },
       },
       {
         id: 'c',
-        text: 'I evaluate based on impact potential — the better idea wins regardless of who submitted it.',
-        scores: { Strategic: 3, Maximizer: 2, Analytical: 1 },
+        text: 'I choose based purely on which proposal creates more impact.',
+        scores: { Maximizer: 3, Strategic: 2, Achiever: 1 },
       },
       {
         id: 'd',
-        text: 'I check which one aligns better with the district\'s goals this year.',
-        scores: { Focus: 3, Strategic: 2, Futuristic: 1 },
-      },
-    ],
-  },
-  {
-    id: 16,
-    theme: 'Consistency',
-    question: 'How do you feel about having standardized processes across all district operations?',
-    options: [
-      {
-        id: 'a',
-        text: 'Essential — consistent processes ensure fairness and reduce chaos.',
-        scores: { Consistency: 3, Discipline: 2, Responsibility: 1 },
-      },
-      {
-        id: 'b',
-        text: 'Useful as guidelines, but flexibility is needed for different situations.',
-        scores: { Arranger: 3, Strategic: 2, Empathy: 1 },
-      },
-      {
-        id: 'c',
-        text: 'They can feel restrictive — I prefer creative freedom to solve problems my way.',
-        scores: { Ideation: 3, Activator: 2, Futuristic: 1 },
-      },
-      {
-        id: 'd',
-        text: 'Important for documentation and records, but leadership needs room to innovate.',
-        scores: { Communication: 3, Analytical: 2, Maximizer: 1 },
+        text: 'I align the decision with district priorities for the year.',
+        scores: { Strategic: 3, Focus: 2, Responsibility: 1 },
       },
     ],
   },
 
-  // ── DELIBERATIVE (Q17, Q18) ────────────────────────────────────
+  // ── DELIBERATIVE (Q10) ────────────────────────────────────
   {
-    id: 17,
+    id: 10,
     theme: 'Deliberative',
-    question: 'A sponsor offers a large sum for a district event but wants certain conditions. How do you decide?',
+    question: 'A sponsor offers significant funding but requests certain conditions. How do you respond?',
     options: [
       {
         id: 'a',
-        text: 'I carefully review the conditions, consult with the team, and weigh all risks before deciding.',
+        text: 'I carefully evaluate all risks before making a decision.',
         scores: { Deliberative: 3, Analytical: 2, Responsibility: 1 },
       },
       {
         id: 'b',
-        text: 'If the conditions are reasonable, I\'d accept — we can\'t afford to lose funding.',
-        scores: { Activator: 3, Achiever: 2, Strategic: 1 },
+        text: 'I accept if the conditions are reasonable and manageable.',
+        scores: { Activator: 3, Achiever: 2, Arranger: 1 },
       },
       {
         id: 'c',
-        text: 'I negotiate — find a middle ground that works for both parties.',
-        scores: { Communication: 3, Strategic: 2, Command: 1 },
+        text: 'I negotiate terms to reach a balanced agreement.',
+        scores: { Communication: 3, Command: 2, Strategic: 1 },
       },
       {
         id: 'd',
-        text: 'I check if the sponsor\'s values align with Rotaract\'s principles first.',
+        text: 'I check if the sponsor aligns with Rotaract\'s values first.',
         scores: { Connectedness: 3, Consistency: 2, Deliberative: 1 },
       },
     ],
   },
-  {
-    id: 18,
-    theme: 'Deliberative',
-    question: 'Before launching a new initiative, what\'s most important to you?',
-    options: [
-      {
-        id: 'a',
-        text: 'Identifying every possible risk and having contingency plans ready.',
-        scores: { Deliberative: 3, Discipline: 2, Strategic: 1 },
-      },
-      {
-        id: 'b',
-        text: 'Getting started quickly — we\'ll learn and adapt as we go.',
-        scores: { Activator: 3, Achiever: 2, Ideation: 1 },
-      },
-      {
-        id: 'c',
-        text: 'Making sure the right people are involved and enthusiastic.',
-        scores: { Developer: 3, Includer: 2, Empathy: 1 },
-      },
-      {
-        id: 'd',
-        text: 'Ensuring it creates maximum impact with the resources we have.',
-        scores: { Maximizer: 3, Focus: 2, Strategic: 1 },
-      },
-    ],
-  },
 
-  // ── DEVELOPER (Q19, Q20) ───────────────────────────────────────
+  // ── DEVELOPER (Q11) ───────────────────────────────────────
   {
-    id: 19,
+    id: 11,
     theme: 'Developer',
-    question: 'A young Rotaractor shows potential but lacks confidence. How do you respond?',
+    question: 'A Rotaractor shows potential but lacks confidence to take up leadership roles. What do you do?',
     options: [
       {
         id: 'a',
-        text: 'I give them a meaningful responsibility that\'s slightly above their comfort zone and guide them through it.',
+        text: 'I give them a responsibility slightly beyond their comfort zone and guide them.',
         scores: { Developer: 3, Maximizer: 2, Command: 1 },
       },
       {
         id: 'b',
-        text: 'I pair them with an experienced member who can mentor them.',
-        scores: { Arranger: 3, Developer: 2, Connectedness: 1 },
+        text: 'I pair them with a mentor who can support their growth.',
+        scores: { Developer: 3, Connectedness: 2, Empathy: 1 },
       },
       {
         id: 'c',
-        text: 'I publicly recognize their small wins to build their confidence.',
-        scores: { Communication: 3, Empathy: 2, Developer: 1 },
+        text: 'I recognize their efforts publicly to build confidence.',
+        scores: { Communication: 3, Includer: 2, Empathy: 1 },
       },
       {
         id: 'd',
-        text: 'I let them find their own path — growth happens naturally when you don\'t force it.',
-        scores: { Includer: 3, Empathy: 2, Connectedness: 1 },
-      },
-    ],
-  },
-  {
-    id: 20,
-    theme: 'Developer',
-    question: 'What gives you the most satisfaction in a leadership role?',
-    options: [
-      {
-        id: 'a',
-        text: 'Watching someone I mentored step up and lead confidently on their own.',
-        scores: { Developer: 3, Empathy: 2, Connectedness: 1 },
-      },
-      {
-        id: 'b',
-        text: 'Delivering exceptional results that set a new benchmark for the district.',
-        scores: { Achiever: 3, Maximizer: 2, Focus: 1 },
-      },
-      {
-        id: 'c',
-        text: 'Building systems and processes that will outlast my tenure.',
-        scores: { Futuristic: 3, Discipline: 2, Strategic: 1 },
-      },
-      {
-        id: 'd',
-        text: 'Bringing people together who wouldn\'t have connected otherwise.',
-        scores: { Connectedness: 3, Includer: 2, Communication: 1 },
+        text: 'I allow them to grow at their own pace without pressure.',
+        scores: { Empathy: 3, Consistency: 2, Includer: 1 },
       },
     ],
   },
 
-  // ── DISCIPLINE (Q21, Q22) ──────────────────────────────────────
+  // ── DISCIPLINE (Q12) ──────────────────────────────────────
   {
-    id: 21,
+    id: 12,
     theme: 'Discipline',
-    question: 'How do you manage your tasks when leading a large project?',
+    question: 'Deadlines for an important event are repeatedly being missed by team members. What do you do?',
     options: [
       {
         id: 'a',
-        text: 'Detailed timelines, checklists, and daily progress tracking — structure is my strength.',
-        scores: { Discipline: 3, Focus: 2, Achiever: 1 },
+        text: 'I enforce deadlines strictly and set clear expectations.',
+        scores: { Discipline: 3, Command: 2, Responsibility: 1 },
       },
       {
         id: 'b',
-        text: 'I keep the big picture in mind and adjust as needed — over-planning can slow you down.',
-        scores: { Strategic: 3, Activator: 2, Futuristic: 1 },
+        text: 'I understand the reasons and adjust timelines realistically.',
+        scores: { Empathy: 3, Arranger: 2, Developer: 1 },
       },
       {
         id: 'c',
-        text: 'I rely on my team leads to manage their areas while I focus on key decisions.',
-        scores: { Command: 3, Developer: 2, Arranger: 1 },
+        text: 'I identify bottlenecks and fix the process.',
+        scores: { Analytical: 3, Strategic: 2, Focus: 1 },
       },
       {
         id: 'd',
-        text: 'I make sure everyone knows their role and check in regularly to ensure accountability.',
-        scores: { Responsibility: 3, Consistency: 2, Discipline: 1 },
-      },
-    ],
-  },
-  {
-    id: 22,
-    theme: 'Discipline',
-    question: 'A district event timeline keeps getting delayed by various team members. What\'s your reaction?',
-    options: [
-      {
-        id: 'a',
-        text: 'I enforce deadlines strictly — discipline is non-negotiable when others are counting on us.',
-        scores: { Discipline: 3, Command: 2, Consistency: 1 },
-      },
-      {
-        id: 'b',
-        text: 'I understand the reasons for delays and adjust the timeline realistically.',
-        scores: { Empathy: 3, Arranger: 2, Deliberative: 1 },
-      },
-      {
-        id: 'c',
-        text: 'I identify the bottleneck and reallocate resources to fix it.',
-        scores: { Analytical: 3, Arranger: 2, Strategic: 1 },
-      },
-      {
-        id: 'd',
-        text: 'I motivate the team with the bigger vision — remind them why this event matters.',
-        scores: { Communication: 3, Futuristic: 2, Activator: 1 },
+        text: 'I remind the team of the purpose and motivate them to act.',
+        scores: { Communication: 3, Connectedness: 2, Activator: 1 },
       },
     ],
   },
 
-  // ── EMPATHY (Q23, Q24) ─────────────────────────────────────────
+  // ── EMPATHY (Q13) ─────────────────────────────────────────
   {
-    id: 23,
+    id: 13,
     theme: 'Empathy',
-    question: 'A fellow district team member seems disengaged and withdrawn during meetings. What do you do?',
+    question: 'A team member who was once active has become quiet and disengaged. What do you do?',
     options: [
       {
         id: 'a',
-        text: 'I privately check in — something is clearly affecting them, and I want them to know I care.',
-        scores: { Empathy: 3, Developer: 2, Connectedness: 1 },
+        text: 'I check in with them personally to understand what\'s going on.',
+        scores: { Empathy: 3, Connectedness: 2, Developer: 1 },
       },
       {
         id: 'b',
-        text: 'I give them space — they\'ll come around when they\'re ready.',
-        scores: { Includer: 3, Empathy: 2, Deliberative: 1 },
+        text: 'I give them space, trusting they will come back.',
+        scores: { Deliberative: 3, Consistency: 2, Includer: 1 },
       },
       {
         id: 'c',
-        text: 'I assign them a task they\'re good at to help them re-engage.',
-        scores: { Arranger: 3, Developer: 2, Maximizer: 1 },
+        text: 'I assign them a role to re-engage them.',
+        scores: { Activator: 3, Arranger: 2, Developer: 1 },
       },
       {
         id: 'd',
-        text: 'I address it directly — the team needs everyone fully present and committed.',
-        scores: { Command: 3, Responsibility: 2, Discipline: 1 },
-      },
-    ],
-  },
-  {
-    id: 24,
-    theme: 'Empathy',
-    question: 'During a heated debate between two club leaders, how do you step in?',
-    options: [
-      {
-        id: 'a',
-        text: 'I listen to both sides carefully — understanding their emotions is the first step to resolution.',
-        scores: { Empathy: 3, Connectedness: 2, Communication: 1 },
-      },
-      {
-        id: 'b',
-        text: 'I call for order and present the facts neutrally.',
-        scores: { Command: 3, Analytical: 2, Consistency: 1 },
-      },
-      {
-        id: 'c',
-        text: 'I redirect the energy toward finding a solution that benefits the district.',
-        scores: { Strategic: 3, Focus: 2, Maximizer: 1 },
-      },
-      {
-        id: 'd',
-        text: 'I remind them of our shared purpose — we\'re on the same team.',
-        scores: { Connectedness: 3, Communication: 2, Includer: 1 },
+        text: 'I address the issue directly within the team.',
+        scores: { Command: 3, Discipline: 2, Communication: 1 },
       },
     ],
   },
 
-  // ── FOCUS (Q25, Q26) ───────────────────────────────────────────
+  // ── FOCUS (Q14) ───────────────────────────────────────────
   {
-    id: 25,
+    id: 14,
     theme: 'Focus',
-    question: 'You have multiple district initiatives running simultaneously. How do you manage your attention?',
+    question: 'You are a part of multiple district & club initiatives at the same time. How do you manage your attention?',
     options: [
       {
         id: 'a',
-        text: 'I prioritize ruthlessly — I identify the top 2-3 that matter most and give them my full energy.',
-        scores: { Focus: 3, Strategic: 2, Achiever: 1 },
+        text: 'I choose a few key initiatives where I can contribute the most and focus on them.',
+        scores: { Focus: 3, Strategic: 2, Maximizer: 1 },
       },
       {
         id: 'b',
-        text: 'I thrive on multitasking — I can keep all plates spinning effectively.',
-        scores: { Arranger: 3, Activator: 2, Achiever: 1 },
+        text: 'I try to stay involved in all of them and contribute wherever needed.',
+        scores: { Achiever: 3, Includer: 2, Responsibility: 1 },
       },
       {
         id: 'c',
-        text: 'I delegate well so each initiative has a capable point person.',
-        scores: { Developer: 3, Command: 2, Arranger: 1 },
+        text: 'I take ownership of specific areas while trusting others to handle the rest.',
+        scores: { Responsibility: 3, Arranger: 2, Focus: 1 },
       },
       {
         id: 'd',
-        text: 'I set up regular check-ins and tracking systems to stay on top of everything.',
-        scores: { Discipline: 3, Responsibility: 2, Analytical: 1 },
-      },
-    ],
-  },
-  {
-    id: 26,
-    theme: 'Focus',
-    question: 'An exciting but unrelated opportunity comes up during a critical project phase. What do you do?',
-    options: [
-      {
-        id: 'a',
-        text: 'I park it — right now, the current project needs my undivided attention.',
-        scores: { Focus: 3, Discipline: 2, Responsibility: 1 },
-      },
-      {
-        id: 'b',
-        text: 'I explore it — great opportunities don\'t wait, and I can manage both.',
-        scores: { Activator: 3, Ideation: 2, Achiever: 1 },
-      },
-      {
-        id: 'c',
-        text: 'I delegate the new opportunity to someone capable while I stay on track.',
-        scores: { Arranger: 3, Developer: 2, Strategic: 1 },
-      },
-      {
-        id: 'd',
-        text: 'I evaluate if it\'s strategically more valuable than the current project.',
-        scores: { Strategic: 3, Analytical: 2, Maximizer: 1 },
+        text: 'I keep track of everything through regular updates and check-ins.',
+        scores: { Discipline: 3, Analytical: 2, Arranger: 1 },
       },
     ],
   },
 
-  // ── FUTURISTIC (Q27, Q28) ─────────────────────────────────────
+  // ── FUTURISTIC (Q15) ──────────────────────────────────────
   {
-    id: 27,
+    id: 15,
     theme: 'Futuristic',
     question: 'When you think about your district\'s future, what excites you most?',
     options: [
       {
         id: 'a',
         text: 'The vision of what Rotaract could become in 5 years if we make the right moves today.',
-        scores: { Futuristic: 3, Strategic: 2, Achiever: 1 },
+        scores: { Futuristic: 3, Strategic: 2, Ideation: 1 },
       },
       {
         id: 'b',
         text: 'Building stronger clubs that sustain themselves beyond any single leader\'s tenure.',
-        scores: { Developer: 3, Responsibility: 2, Futuristic: 1 },
+        scores: { Developer: 3, Responsibility: 2, Consistency: 1 },
       },
       {
         id: 'c',
         text: 'Creating a legacy of impactful community projects that people remember.',
-        scores: { Achiever: 3, Connectedness: 2, Maximizer: 1 },
+        scores: { Achiever: 3, Connectedness: 2, Futuristic: 1 },
       },
       {
         id: 'd',
         text: 'Establishing systems and traditions that become the standard for future teams.',
-        scores: { Discipline: 3, Consistency: 2, Futuristic: 1 },
-      },
-    ],
-  },
-  {
-    id: 28,
-    theme: 'Futuristic',
-    question: 'How do you make decisions about long-term district projects?',
-    options: [
-      {
-        id: 'a',
-        text: 'I think about the end goal first and work backwards to plan the steps.',
-        scores: { Futuristic: 3, Strategic: 2, Focus: 1 },
-      },
-      {
-        id: 'b',
-        text: 'I base decisions on what worked in the past and build on proven approaches.',
-        scores: { Analytical: 3, Consistency: 2, Deliberative: 1 },
-      },
-      {
-        id: 'c',
-        text: 'I consult with the broader team to get diverse perspectives.',
-        scores: { Includer: 3, Empathy: 2, Connectedness: 1 },
-      },
-      {
-        id: 'd',
-        text: 'I focus on what will create the most impact and eliminate everything else.',
-        scores: { Maximizer: 3, Focus: 2, Strategic: 1 },
+        scores: { Discipline: 3, Consistency: 2, Arranger: 1 },
       },
     ],
   },
 
-  // ── IDEATION (Q29, Q30) ────────────────────────────────────────
+  // ── IDEATION (Q16) ────────────────────────────────────────
   {
-    id: 29,
+    id: 16,
     theme: 'Ideation',
-    question: 'The district needs a fresh approach to increase club engagement. How do you contribute?',
+    question: 'Your entire team\'s engagement has been low recently. How do you approach solving this?',
     options: [
       {
         id: 'a',
-        text: 'I brainstorm 10 ideas quickly — even wild ones — because the best ideas often start unconventional.',
-        scores: { Ideation: 3, Activator: 2, Futuristic: 1 },
+        text: 'I throw in a bunch of fresh, even crazy ideas to spark reactions.',
+        scores: { Ideation: 3, Activator: 2, Communication: 1 },
       },
       {
         id: 'b',
-        text: 'I research what other districts and organizations are doing successfully.',
-        scores: { Analytical: 3, Strategic: 2, Deliberative: 1 },
+        text: 'I check what worked in other teams and try something similar.',
+        scores: { Strategic: 3, Analytical: 2, Maximizer: 1 },
       },
       {
         id: 'c',
-        text: 'I ask club members directly what they want — the answer lies with them.',
-        scores: { Empathy: 3, Includer: 2, Communication: 1 },
+        text: 'I directly ask members what they actually want to see or do.',
+        scores: { Empathy: 3, Includer: 2, Connectedness: 1 },
       },
       {
         id: 'd',
-        text: 'I take one proven concept and refine it to perfection.',
-        scores: { Maximizer: 3, Focus: 2, Discipline: 1 },
-      },
-    ],
-  },
-  {
-    id: 30,
-    theme: 'Ideation',
-    question: 'In team brainstorming sessions, what role do you naturally take?',
-    options: [
-      {
-        id: 'a',
-        text: 'The idea generator — I connect dots others don\'t see and propose creative solutions.',
-        scores: { Ideation: 3, Communication: 2, Strategic: 1 },
-      },
-      {
-        id: 'b',
-        text: 'The evaluator — I help the team separate great ideas from impractical ones.',
-        scores: { Analytical: 3, Deliberative: 2, Consistency: 1 },
-      },
-      {
-        id: 'c',
-        text: 'The facilitator — I make sure everyone\'s voice is heard.',
-        scores: { Includer: 3, Empathy: 2, Communication: 1 },
-      },
-      {
-        id: 'd',
-        text: 'The executor — I\'m already thinking about how to implement what\'s being discussed.',
-        scores: { Activator: 3, Achiever: 2, Arranger: 1 },
+        text: 'I take one proven idea and execute it really well to restart momentum.',
+        scores: { Achiever: 3, Focus: 2, Activator: 1 },
       },
     ],
   },
 
-  // ── INCLUDER (Q31) & MAXIMIZER (Q32) ──────────────────────────
+  // ── INCLUDER (Q17) ────────────────────────────────────────
   {
-    id: 31,
+    id: 17,
     theme: 'Includer',
-    question: 'New members join the district team but feel like outsiders among experienced members. What do you do?',
+    question: 'You are a new DO who feels overshadowed by more experienced DOs. How do you make yourself seen or heard?',
     options: [
       {
         id: 'a',
-        text: 'I personally welcome them, introduce them to everyone, and make sure they\'re included in all discussions.',
-        scores: { Includer: 3, Empathy: 2, Communication: 1 },
+        text: 'I actively speak up and share my thoughts whenever there\'s an opportunity.',
+        scores: { Command: 3, Communication: 2, Activator: 1 },
       },
       {
         id: 'b',
-        text: 'I assign them a buddy from the experienced team to help them settle in.',
-        scores: { Arranger: 3, Developer: 2, Connectedness: 1 },
+        text: 'I build rapport with a few team members so I feel more comfortable contributing.',
+        scores: { Includer: 3, Connectedness: 2, Empathy: 1 },
       },
       {
         id: 'c',
-        text: 'I give them a visible responsibility early on so they feel valued.',
-        scores: { Developer: 3, Command: 2, Activator: 1 },
+        text: 'I take up responsibilities and let my work speak for me.',
+        scores: { Achiever: 3, Responsibility: 2, Focus: 1 },
       },
       {
         id: 'd',
-        text: 'I trust them to find their footing — capable people adapt quickly.',
-        scores: { Achiever: 3, Focus: 2, Strategic: 1 },
+        text: 'I observe and wait for the right time before stepping in.',
+        scores: { Deliberative: 3, Strategic: 2, Analytical: 1 },
       },
     ],
   },
+
+  // ── MAXIMIZER (Q18) ───────────────────────────────────────
   {
-    id: 32,
+    id: 18,
     theme: 'Maximizer',
-    question: 'A district project is good but not great. The deadline is tomorrow. What do you do?',
+    question: 'A project is good but not great, and the deadline is close. What do you do?',
     options: [
       {
         id: 'a',
@@ -895,13 +521,71 @@ const ASSESSMENT_QUESTIONS = [
       },
       {
         id: 'c',
-        text: 'I identify the one or two things that will make the biggest quality difference and fix only those.',
+        text: 'I identify the things that will make the biggest quality difference and fix only those.',
         scores: { Strategic: 3, Focus: 2, Analytical: 1 },
       },
       {
         id: 'd',
-        text: 'I rally the team for a final push — together we can elevate it tonight.',
+        text: 'I rally the team for a final push — together we can elevate it overnight.',
         scores: { Command: 3, Includer: 2, Connectedness: 1 },
+      },
+    ],
+  },
+
+  // ── REALITY CHECK (Q19) ───────────────────────────────────
+  {
+    id: 19,
+    theme: 'Strategic',
+    question: 'Many members lose interest during online meetings or sessions. How can we change this?',
+    options: [
+      {
+        id: 'a',
+        text: 'Make sessions more engaging and interactive with activities, polls, or discussions.',
+        scores: { Ideation: 3, Communication: 2, Activator: 1 },
+      },
+      {
+        id: 'b',
+        text: 'Focus on making the content more relevant and useful to the audience.',
+        scores: { Maximizer: 3, Analytical: 2, Strategic: 1 },
+      },
+      {
+        id: 'c',
+        text: 'Create more opportunities for members to participate and contribute actively.',
+        scores: { Includer: 3, Developer: 2, Empathy: 1 },
+      },
+      {
+        id: 'd',
+        text: 'Improve planning and structure to keep sessions smooth and well-paced.',
+        scores: { Discipline: 3, Arranger: 2, Focus: 1 },
+      },
+    ],
+  },
+
+  // ── VALUES (Q20) ──────────────────────────────────────────
+  {
+    id: 20,
+    theme: 'Responsibility',
+    question: 'When doing a service activity like food distribution, would you take photos? Why?',
+    options: [
+      {
+        id: 'a',
+        text: 'Yes, to create awareness and inspire others.',
+        scores: { Communication: 3, Futuristic: 2, Activator: 1 },
+      },
+      {
+        id: 'b',
+        text: 'Yes, but only with consent and sensitivity.',
+        scores: { Responsibility: 3, Empathy: 2, Deliberative: 1 },
+      },
+      {
+        id: 'c',
+        text: 'No, I prefer focusing only on service.',
+        scores: { Achiever: 3, Connectedness: 2, Responsibility: 1 },
+      },
+      {
+        id: 'd',
+        text: 'It depends on the context and purpose.',
+        scores: { Deliberative: 3, Analytical: 2, Strategic: 1 },
       },
     ],
   },

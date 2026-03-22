@@ -61,8 +61,32 @@ export function analyzeLocally(responses, questions) {
   }
 
   const recommendations = categoryScores
+    .filter((c) => c.matchScore > 0)
     .sort((a, b) => b.matchScore - a.matchScore)
-    .slice(0, 3)
 
   return { scores, ranked, top5, recommendations }
+}
+
+/**
+ * Given recommendations and full positions list, returns the top 3 best-fit positions
+ * (one from each of the top 3 categories, highest tier first)
+ */
+export function getTopPositions(recommendations, positions) {
+  const tierPriority = { lead: 0, deputy: 1, associate: 2 }
+  const topPositions = []
+
+  for (const rec of recommendations.slice(0, 3)) {
+    const categoryPositions = positions
+      .filter((p) => p.category === rec.category)
+      .sort((a, b) => (tierPriority[a.tier] ?? 3) - (tierPriority[b.tier] ?? 3))
+
+    if (categoryPositions.length > 0) {
+      topPositions.push({
+        ...categoryPositions[0],
+        matchedStrengths: rec.matchedStrengths,
+      })
+    }
+  }
+
+  return topPositions
 }

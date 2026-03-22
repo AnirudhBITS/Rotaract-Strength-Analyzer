@@ -1,6 +1,7 @@
 import { useLocation, Link, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { HiOutlineTrophy, HiOutlineSparkles, HiOutlineCheckCircle, HiOutlineArrowLeft } from 'react-icons/hi2'
+import { jsPDF } from 'jspdf'
+import { HiOutlineTrophy, HiOutlineSparkles, HiOutlineCheckCircle, HiOutlineArrowLeft, HiOutlineArrowDownTray } from 'react-icons/hi2'
 
 const STRENGTH_COLORS = {
   Achiever: 'bg-emerald-100 text-emerald-700',
@@ -40,8 +41,151 @@ export default function ResultPage() {
     return <Navigate to="/" replace />
   }
 
-  const { analysis, name, selectedPositions } = state
+  const { analysis, name, applicationNumber, selectedPositions, recommendedPositions } = state
   const maxScore = analysis.ranked[0]?.score || 1
+
+  const handleDownload = () => {
+    const pdf = new jsPDF('p', 'mm', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const margin = 20
+    const contentWidth = pageWidth - margin * 2
+    let y = 20
+
+    const checkPage = (needed = 10) => {
+      if (y + needed > pdf.internal.pageSize.getHeight() - 15) {
+        pdf.addPage()
+        y = 20
+      }
+    }
+
+    // Title
+    pdf.setFontSize(18)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text('Rotaract Strength Analyzer', pageWidth / 2, y, { align: 'center' })
+    y += 7
+
+    pdf.setFontSize(9)
+    pdf.setFont('helvetica', 'normal')
+    pdf.setTextColor(100)
+    pdf.text('District Officials Recruitment — Expression of Interest Acknowledgement', pageWidth / 2, y, { align: 'center' })
+    y += 12
+
+    // Application number box
+    pdf.setDrawColor(200, 210, 240)
+    pdf.setFillColor(240, 244, 255)
+    const boxW = 70
+    const boxX = (pageWidth - boxW) / 2
+    pdf.roundedRect(boxX, y, boxW, 20, 3, 3, 'FD')
+
+    pdf.setFontSize(7)
+    pdf.setTextColor(120)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text('APPLICATION NUMBER', pageWidth / 2, y + 7, { align: 'center' })
+
+    pdf.setFontSize(14)
+    pdf.setTextColor(26, 26, 46)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text(applicationNumber || 'N/A', pageWidth / 2, y + 15, { align: 'center' })
+    y += 28
+
+    // Applicant name
+    pdf.setFontSize(11)
+    pdf.setTextColor(50)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text('Applicant: ', pageWidth / 2 - pdf.getTextWidth('Applicant: ' + name) / 2, y)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text(name, pageWidth / 2 - pdf.getTextWidth('Applicant: ' + name) / 2 + pdf.getTextWidth('Applicant: '), y)
+    y += 6
+
+    const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+    pdf.setFontSize(9)
+    pdf.setFont('helvetica', 'normal')
+    pdf.setTextColor(140)
+    pdf.text(`Submitted on ${dateStr}`, pageWidth / 2, y, { align: 'center' })
+    y += 12
+
+    // Section helper
+    const addSectionTitle = (title) => {
+      checkPage(15)
+      pdf.setFontSize(12)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(26, 26, 46)
+      pdf.text(title, margin, y)
+      y += 1
+      pdf.setDrawColor(220)
+      pdf.setLineWidth(0.5)
+      pdf.line(margin, y, pageWidth - margin, y)
+      y += 6
+    }
+
+    const addBullet = (text) => {
+      checkPage(8)
+      pdf.setFontSize(10)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setTextColor(60)
+      const lines = pdf.splitTextToSize(text, contentWidth - 8)
+      pdf.text('•', margin + 2, y)
+      pdf.text(lines, margin + 8, y)
+      y += lines.length * 5 + 2
+    }
+
+    // Top 5 Strengths
+    addSectionTitle('Top 5 Strengths')
+    analysis.top5.forEach((t, i) => {
+      const score = analysis.ranked.find(r => r.theme === t)?.score
+      addBullet(`#${i + 1}  ${t}  (${score} pts)`)
+    })
+    y += 4
+
+    // Recommended Positions
+    addSectionTitle('Recommended Positions')
+    if (recommendedPositions?.length) {
+      recommendedPositions.forEach((p, i) => {
+        addBullet(`Match #${i + 1}:  ${p.title}  —  ${p.category}`)
+      })
+    } else {
+      addBullet('N/A')
+    }
+    y += 2
+
+    // Note
+    checkPage(25)
+    pdf.setFillColor(255, 251, 240)
+    pdf.setDrawColor(240, 224, 176)
+    pdf.roundedRect(margin, y, contentWidth, 22, 2, 2, 'FD')
+    pdf.setFontSize(7.5)
+    pdf.setFont('helvetica', 'bold')
+    pdf.setTextColor(80)
+    pdf.text('Please note:', margin + 4, y + 5)
+    pdf.setFont('helvetica', 'normal')
+    pdf.setTextColor(100)
+    const noteText = 'These suggestions are intended to give you an insight into the roles that may align well with your strengths. Selecting a suggested position does not guarantee a confirmed District Official posting. All submissions will undergo a dedicated screening process, and the final decision rests with the District Rotaract Representative.'
+    const noteLines = pdf.splitTextToSize(noteText, contentWidth - 8)
+    pdf.text(noteLines, margin + 4, y + 10)
+    y += 28
+
+    // Your Preferred Positions
+    addSectionTitle('Your Preferred Positions')
+    selectedPositions.forEach((t, i) => {
+      addBullet(`${i + 1}.  ${t}`)
+    })
+    y += 8
+
+    // Footer
+    checkPage(15)
+    pdf.setDrawColor(220)
+    pdf.setLineWidth(0.3)
+    pdf.line(margin, y, pageWidth - margin, y)
+    y += 6
+    pdf.setFontSize(8)
+    pdf.setTextColor(160)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text('This is a system-generated acknowledgement from the Rotaract Strength Analyzer.', pageWidth / 2, y, { align: 'center' })
+    y += 5
+    pdf.text(`Please retain your Application Number ${applicationNumber || ''} for future reference.`, pageWidth / 2, y, { align: 'center' })
+
+    pdf.save(`Acknowledgement-${applicationNumber || 'RSA'}.pdf`)
+  }
 
   return (
     <div className="min-h-screen bg-surface">
@@ -71,6 +215,13 @@ export default function ResultPage() {
           <p className="mt-3 text-lg text-navy-500">
             Thank you, <span className="font-semibold text-navy-700">{name}</span>. Here's your strength profile.
           </p>
+          {applicationNumber && (
+            <div className="mt-4 inline-block px-5 py-3 bg-navy-50 rounded-xl border border-navy-200">
+              <p className="text-xs font-medium text-navy-500 uppercase tracking-wider">Application Number</p>
+              <p className="text-xl font-extrabold text-navy-900 tracking-wide mt-0.5">{applicationNumber}</p>
+              <p className="text-xs text-navy-400 mt-1">Please note this down for future follow-ups.</p>
+            </div>
+          )}
         </motion.div>
 
         {/* Top 5 Strengths */}
@@ -135,30 +286,36 @@ export default function ResultPage() {
           </div>
         </motion.section>
 
-        {/* Recommended Categories */}
-        <motion.section
-          className="mb-10"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.5 }}
-        >
-          <h2 className="text-xl font-bold text-navy-950 mb-6">Recommended Role Categories</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {analysis.recommendations.map((rec, i) => (
-              <div key={rec.category} className="p-5 bg-gradient-to-br from-gold-50 to-white rounded-2xl border border-gold-200">
-                <span className="text-xs font-bold text-gold-600 uppercase tracking-wider">Match #{i + 1}</span>
-                <h3 className="mt-2 text-lg font-bold text-navy-900">{rec.category}</h3>
-                <div className="mt-3 flex flex-wrap gap-1">
-                  {rec.matchedStrengths.map((s) => (
-                    <span key={s} className={`px-2 py-0.5 rounded-full text-xs font-medium ${STRENGTH_COLORS[s] || 'bg-gray-100 text-gray-700'}`}>
-                      {s}
-                    </span>
-                  ))}
+        {/* Recommended Positions */}
+        {recommendedPositions && recommendedPositions.length > 0 && (
+          <motion.section
+            className="mb-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.5 }}
+          >
+            <h2 className="text-xl font-bold text-navy-950 mb-6">Recommended Positions</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {recommendedPositions.map((pos, i) => (
+                <div key={pos.id} className="p-5 bg-gradient-to-br from-gold-50 to-white rounded-2xl border border-gold-200">
+                  <span className="text-xs font-bold text-gold-600 uppercase tracking-wider">Match #{i + 1}</span>
+                  <h3 className="mt-2 text-lg font-bold text-navy-900">{pos.title}</h3>
+                  <p className="mt-1 text-xs text-navy-500">{pos.category}</p>
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {pos.matchedStrengths.map((s) => (
+                      <span key={s} className={`px-2 py-0.5 rounded-full text-xs font-medium ${STRENGTH_COLORS[s] || 'bg-gray-100 text-gray-700'}`}>
+                        {s}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </motion.section>
+              ))}
+            </div>
+            <p className="mt-4 text-xs text-navy-500 leading-relaxed">
+              <strong>Please note:</strong> These suggestions are intended to give you an insight into the roles that may align well with your strengths. Selecting a suggested position does not guarantee a confirmed District Official posting. All submissions will undergo a dedicated screening process, and the final decision rests with the District Rotaract Representative.
+            </p>
+          </motion.section>
+        )}
 
         {/* Your Choices */}
         <motion.section
@@ -180,7 +337,7 @@ export default function ResultPage() {
           </div>
         </motion.section>
 
-        <div className="text-center">
+        <div className="flex items-center justify-center gap-4">
           <Link
             to="/"
             className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-navy-700 bg-white border border-border-subtle rounded-xl shadow-sm hover:bg-navy-50"
@@ -188,6 +345,13 @@ export default function ResultPage() {
             <HiOutlineArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
+          <button
+            onClick={handleDownload}
+            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-primary-600 rounded-xl shadow-sm hover:bg-primary-700 transition-colors"
+          >
+            <HiOutlineArrowDownTray className="w-4 h-4" />
+            Download Acknowledgement
+          </button>
         </div>
       </main>
     </div>

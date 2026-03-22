@@ -6,7 +6,7 @@ import {
   HiOutlineArrowLeft, HiOutlineEnvelope, HiOutlinePhone,
   HiOutlineMapPin, HiOutlineBriefcase, HiOutlineHeart,
 } from 'react-icons/hi2'
-import { adminApi } from '../api/client'
+import { adminApi, getFileUrl } from '../api/client'
 
 const STATUS_OPTIONS = ['pending', 'reviewed', 'shortlisted', 'selected', 'rejected']
 
@@ -124,15 +124,20 @@ export default function ApplicantDetail() {
               {/* Photos */}
               <div className="flex gap-3 mb-6">
                 {applicant.professional_photo && (
-                  <img src={applicant.professional_photo} alt="Professional" className="w-20 h-20 rounded-xl object-cover border-2 border-border-subtle" />
+                  <img src={getFileUrl(applicant.professional_photo)} alt="Professional" className="w-20 h-20 rounded-xl object-cover border-2 border-border-subtle" />
                 )}
                 {applicant.casual_photo && (
-                  <img src={applicant.casual_photo} alt="Casual" className="w-20 h-20 rounded-xl object-cover border-2 border-border-subtle" />
+                  <img src={getFileUrl(applicant.casual_photo)} alt="Casual" className="w-20 h-20 rounded-xl object-cover border-2 border-border-subtle" />
                 )}
               </div>
 
               <h2 className="text-xl font-extrabold text-navy-950">{applicant.name}</h2>
               <p className="text-sm text-navy-500 mt-1">{applicant.club_name}</p>
+              {applicant.application_number && (
+                <p className="mt-2 text-xs font-mono font-semibold text-primary-600 bg-primary-50 inline-block px-2 py-1 rounded-lg">
+                  {applicant.application_number}
+                </p>
+              )}
 
               <div className="mt-6 space-y-3">
                 <InfoRow icon={HiOutlineEnvelope} text={applicant.email} />
@@ -265,20 +270,21 @@ export default function ApplicantDetail() {
                 className="bg-gradient-to-br from-gold-50 to-white rounded-2xl border border-gold-200 p-6 shadow-sm"
               >
                 <h3 className="text-sm font-bold text-navy-900 mb-3">System Suggestions</h3>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {systemSuggestions.map((r) => (
-                    <div key={r.id} className="flex items-center gap-2 p-3 bg-white/80 rounded-xl">
-                      <span className="w-6 h-6 rounded-full bg-gold-100 text-gold-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    <div key={r.id} className="flex items-center gap-2 px-3 py-2 bg-white/80 rounded-lg">
+                      <span className="w-5 h-5 rounded-full bg-gold-100 text-gold-700 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                         {r.preference_order}
                       </span>
-                      <div>
-                        <span className="text-sm font-medium text-navy-700">{r.position_title}</span>
-                        {r.position_category && (
-                          <p className="text-xs text-navy-400">{r.position_category}</p>
-                        )}
-                      </div>
+                      <span className="text-sm font-medium text-navy-800">{r.position_title}</span>
+                      {r.position_tier && (
+                        <span className="ml-auto text-[10px] font-medium text-navy-400 uppercase flex-shrink-0">{r.position_tier}</span>
+                      )}
                     </div>
                   ))}
+                  {systemSuggestions.length === 0 && (
+                    <p className="text-sm text-navy-400 italic py-2">No suggestions recorded</p>
+                  )}
                 </div>
               </motion.div>
             </div>

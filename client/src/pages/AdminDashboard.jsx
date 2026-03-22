@@ -65,12 +65,12 @@ export default function AdminDashboard() {
 
   const handleExport = async () => {
     try {
-      const { data } = await adminApi.exportAll()
-      const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' })
+      const response = await adminApi.exportAll()
+      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `rotaract-applicants-${new Date().toISOString().split('T')[0]}.json`
+      a.download = `rotaract-applicants-${new Date().toISOString().split('T')[0]}.xlsx`
       a.click()
       URL.revokeObjectURL(url)
       toast.success('Export downloaded')
@@ -177,7 +177,7 @@ export default function AdminDashboard() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border-subtle bg-navy-50/50">
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-navy-500 uppercase tracking-wider">#</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-navy-500 uppercase tracking-wider">App #</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-navy-500 uppercase tracking-wider">Name</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-navy-500 uppercase tracking-wider">Club</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-navy-500 uppercase tracking-wider">Email</th>
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
                       transition={{ delay: i * 0.03 }}
                       className="border-b border-border-subtle last:border-0 hover:bg-navy-50/30 transition-colors"
                     >
-                      <td className="px-6 py-4 text-sm text-navy-500">{(page - 1) * 20 + i + 1}</td>
+                      <td className="px-6 py-4 text-xs font-mono font-semibold text-navy-600">{a.application_number || '—'}</td>
                       <td className="px-6 py-4 text-sm font-semibold text-navy-900">{a.name}</td>
                       <td className="px-6 py-4 text-sm text-navy-600">{a.club_name}</td>
                       <td className="px-6 py-4 text-sm text-navy-500">{a.email}</td>

@@ -8,6 +8,8 @@ const {
   allocateCandidate,
   deallocateCandidate,
   getAllocationSummary,
+  searchApplicants,
+  getUnallocatedApplicants,
 } = require('../controllers/allocationController');
 
 const router = express.Router();
@@ -17,6 +19,8 @@ router.use(authenticate);
 router.get('/positions', getPositions);
 router.get('/summary', getAllocationSummary);
 router.get('/positions/:positionId/candidates', getPositionCandidates);
+router.get('/search-applicants', searchApplicants);
+router.get('/unallocated-applicants', getUnallocatedApplicants);
 
 router.post(
   '/positions/:positionId/allocate',
