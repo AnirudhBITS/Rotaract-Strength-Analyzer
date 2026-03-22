@@ -7,34 +7,9 @@ export const getFileUrl = (path) => {
   return `${BACKEND_URL}${path}`;
 };
 
-function getToken() {
-  return localStorage.getItem('admin_token');
-}
-
+// Use the global __api function defined in index.html (works on mobile)
 async function request(method, path, body, options = {}) {
-  const url = path.startsWith('http') ? path : API_URL + path;
-  const headers = {};
-  const token = getToken();
-  if (token) headers['Authorization'] = 'Bearer ' + token;
-
-  const config = { method, headers };
-
-  if (body instanceof FormData) {
-    config.body = body;
-  } else if (body) {
-    headers['Content-Type'] = 'application/json';
-    config.body = JSON.stringify(body);
-  }
-
-  const res = await fetch(url, config);
-
-  if (res.status === 401) {
-    localStorage.removeItem('admin_token');
-    if (window.location.pathname.startsWith('/admin')) {
-      window.location.href = '/admin/login';
-    }
-    throw { response: { status: 401, data: { error: 'Unauthorized' } } };
-  }
+  const res = await window.__api(method, path, body);
 
   if (options.responseType === 'arraybuffer') {
     const buffer = await res.arrayBuffer();

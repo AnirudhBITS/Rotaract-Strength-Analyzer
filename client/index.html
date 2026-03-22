@@ -12,16 +12,39 @@
   <body>
     <div id="root"></div>
     <script>
-      // Prefetch form data before React loads
+      // Global API helper — runs outside React module context (works on mobile)
+      var __API__ = 'https://rotaract3234strengthanalyser-backend.blackitechs.org/api';
+
+      window.__api = function(method, path, body) {
+        var url = __API__ + path;
+        var opts = { method: method, headers: {} };
+        var token = localStorage.getItem('admin_token');
+        if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+        if (body && !(body instanceof FormData)) {
+          opts.headers['Content-Type'] = 'application/json';
+          opts.body = JSON.stringify(body);
+        } else if (body) {
+          opts.body = body;
+        }
+        return fetch(url, opts).then(function(res) {
+          if (res.status === 401) {
+            localStorage.removeItem('admin_token');
+            if (window.location.pathname.indexOf('/admin') === 0) window.location.href = '/admin/login';
+            return Promise.reject({ response: { status: 401, data: {} } });
+          }
+          return res;
+        });
+      };
+
+      // Prefetch form data
       window.__PREFETCH__ = {};
-      var API = 'https://rotaract3234strengthanalyser-backend.blackitechs.org/api';
       function pf(name, url) {
-        return fetch(url).then(function(r) { return r.json(); }).then(function(d) { window.__PREFETCH__[name] = d; }).catch(function() {});
+        return fetch(__API__ + url).then(function(r) { return r.json(); }).then(function(d) { window.__PREFETCH__[name] = d; }).catch(function() {});
       }
       Promise.all([
-        pf('questions', API + '/application/questions'),
-        pf('positions', API + '/application/positions'),
-        pf('clubs', API + '/application/clubs')
+        pf('questions', '/application/questions'),
+        pf('positions', '/application/positions'),
+        pf('clubs', '/application/clubs')
       ]).then(function() { window.__PREFETCH_DONE__ = true; });
     </script>
     <script type="module" src="/src/main.jsx"></script>
