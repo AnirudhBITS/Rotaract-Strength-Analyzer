@@ -55,34 +55,20 @@ export default function FormPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const errors = []
-
       try {
-        const qRes = await applicationApi.getQuestions()
+        const [qRes, pRes, cRes] = await Promise.all([
+          applicationApi.getQuestions(),
+          applicationApi.getPositions(),
+          applicationApi.getClubs(),
+        ])
         setQuestions(qRes.data.questions)
-      } catch (e) {
-        errors.push('questions: ' + (e.message || 'unknown'))
-      }
-
-      try {
-        const pRes = await applicationApi.getPositions()
         setPositions(pRes.data.positions)
-      } catch (e) {
-        errors.push('positions: ' + (e.message || 'unknown'))
-      }
-
-      try {
-        const cRes = await applicationApi.getClubs()
         setClubs(cRes.data.clubs)
       } catch (e) {
-        errors.push('clubs: ' + (e.message || 'unknown'))
+        toast.error('Failed to load form data. Please refresh.')
+      } finally {
+        setLoading(false)
       }
-
-      if (errors.length > 0) {
-        toast.error('Load errors: ' + errors.join(', '), { duration: 10000 })
-      }
-
-      setLoading(false)
     }
     fetchData()
   }, [])
