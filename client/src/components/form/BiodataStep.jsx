@@ -483,7 +483,7 @@ export default function BiodataStep({ data, onChange, errors, clubs = [], onSect
               <>
                 <div>
                   <label className="block text-sm font-semibold text-navy-700 mb-1.5">Blood Group <span className="text-red-400">*</span></label>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-4 sm:grid-cols-4 gap-2">
                     {BLOOD_GROUPS.map((bg) => (
                       <button key={bg} type="button" onClick={() => onChange({ ...data, bloodGroup: bg })}
                         className={`py-3 rounded-xl text-sm font-bold transition-all duration-200 border-2

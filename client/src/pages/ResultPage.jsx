@@ -235,7 +235,7 @@ export default function ResultPage() {
             <HiOutlineTrophy className="w-6 h-6 text-gold-600" />
             <h2 className="text-xl font-bold text-navy-950">Your Top 5 Strengths</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {analysis.top5.map((theme, i) => (
               <motion.div
                 key={theme}
@@ -267,7 +267,7 @@ export default function ResultPage() {
           <div className="bg-white rounded-2xl border border-border-subtle p-6 space-y-3">
             {analysis.ranked.map((entry) => (
               <div key={entry.theme} className="flex items-center gap-4">
-                <span className="w-28 sm:w-36 text-sm font-medium text-navy-700 text-right flex-shrink-0">
+                <span className="w-20 sm:w-36 text-xs sm:text-sm font-medium text-navy-700 text-right flex-shrink-0">
                   {entry.theme}
                 </span>
                 <div className="flex-1 h-6 bg-navy-50 rounded-full overflow-hidden">

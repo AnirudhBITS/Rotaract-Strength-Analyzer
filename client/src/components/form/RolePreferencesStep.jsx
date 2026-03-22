@@ -89,7 +89,7 @@ export default function RolePreferencesStep({ positions, selected, onChange, rec
           </AnimatePresence>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[0, 1, 2].map((slot) => {
             const pos = selectedPositions[slot]
             const colors = SLOT_COLORS[slot]

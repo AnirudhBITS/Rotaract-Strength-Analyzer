@@ -527,7 +527,7 @@ export default function AssessmentStep({ questions, responses, onChange }) {
             {answered} of {totalQ} answered
           </p>
         </div>
-        <div className="grid grid-cols-10 gap-1.5">
+        <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 sm:gap-1.5">
           {questions.map((q, i) => {
             const isAnswered = responses[q.id] !== undefined
             const isCurrent = i === currentQ

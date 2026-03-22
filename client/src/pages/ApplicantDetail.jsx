@@ -196,7 +196,7 @@ export default function ApplicantDetail() {
               className="bg-white rounded-2xl border border-border-subtle p-6 shadow-sm"
             >
               <h3 className="text-lg font-bold text-navy-950 mb-4">Top 5 Strengths</h3>
-              <div className="grid grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 {top5.map((s, i) => (
                   <div key={s.theme} className="text-center p-3 rounded-xl bg-surface">
                     <span className="text-2xl font-extrabold text-primary-600">#{i + 1}</span>
@@ -220,7 +220,7 @@ export default function ApplicantDetail() {
               <div className="space-y-2">
                 {strengthScores.map((entry) => (
                   <div key={entry.theme} className="flex items-center gap-3">
-                    <span className="w-28 text-xs font-medium text-navy-600 text-right flex-shrink-0">
+                    <span className="w-20 sm:w-28 text-xs font-medium text-navy-600 text-right flex-shrink-0">
                       {entry.theme}
                     </span>
                     <div className="flex-1 h-5 bg-navy-50 rounded-full overflow-hidden">

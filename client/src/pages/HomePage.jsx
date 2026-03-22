@@ -122,7 +122,7 @@ export default function HomePage() {
           </motion.div>
 
           <motion.div
-            className="mt-14 flex items-center justify-center gap-8 text-sm text-navy-400 font-semibold"
+            className="mt-14 flex items-center justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-navy-400 font-semibold flex-wrap"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
