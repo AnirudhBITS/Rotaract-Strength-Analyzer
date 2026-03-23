@@ -31,8 +31,8 @@ function buildAcknowledgementHtml({ name, applicationNumber, top5, recommendatio
 <head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#f5f5fa;font-family:'Segoe UI',system-ui,sans-serif">
   <div style="max-width:600px;margin:0 auto;background:#ffffff">
-    <!-- Header bar -->
-    <div style="height:4px;background:linear-gradient(to right,#42b8e9,#e71e6d,#ffc829,#f97316)"></div>
+    <!-- Header banner -->
+    <img src="${process.env.CLIENT_URL || 'https://rotaract3234strengthanalyser.blackitechs.org'}/hero-laptop.png" alt="Rotaract District 3234" style="width:100%;height:auto;display:block" />
 
     <div style="padding:32px 28px 24px">
       <h1 style="margin:0 0 4px;font-size:22px;color:#1e1e30;text-align:center">Rotaract 3234 DO Screening</h1>
@@ -106,7 +106,7 @@ function buildAdminNotificationHtml({ name, email, phone, clubName, applicationN
 <head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#f5f5fa;font-family:'Segoe UI',system-ui,sans-serif">
   <div style="max-width:600px;margin:0 auto;background:#ffffff">
-    <div style="height:4px;background:linear-gradient(to right,#42b8e9,#e71e6d,#ffc829,#f97316)"></div>
+    <img src="${process.env.CLIENT_URL || 'https://rotaract3234strengthanalyser.blackitechs.org'}/hero-laptop.png" alt="Rotaract District 3234" style="width:100%;height:auto;display:block" />
     <div style="padding:28px">
       <h1 style="margin:0 0 4px;font-size:18px;color:#1e1e30">New EOI Application Received</h1>
       <p style="margin:0 0 20px;font-size:13px;color:#8587b3">Application: <strong style="color:#1e1e30">${applicationNumber}</strong></p>
@@ -203,7 +203,7 @@ async function sendOTPEmail(email, otp) {
 <html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:0;background:#f5f5fa;font-family:'Segoe UI',system-ui,sans-serif">
   <div style="max-width:480px;margin:0 auto;background:#ffffff">
-    <div style="height:4px;background:linear-gradient(to right,#42b8e9,#e71e6d,#ffc829,#f97316)"></div>
+    <img src="${process.env.CLIENT_URL || 'https://rotaract3234strengthanalyser.blackitechs.org'}/hero-laptop.png" alt="Rotaract District 3234" style="width:100%;height:auto;display:block" />
     <div style="padding:32px 28px;text-align:center">
       <h1 style="margin:0 0 8px;font-size:20px;color:#1e1e30">Email Verification</h1>
       <p style="margin:0 0 24px;font-size:13px;color:#8587b3">Rotaract 3234 DO Screening — District EOI</p>

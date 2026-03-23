@@ -44,7 +44,24 @@ export default function ResultPage() {
   const { analysis, name, applicationNumber, selectedPositions, recommendedPositions } = state
   const maxScore = analysis.ranked[0]?.score || 1
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
+    // Load banner image as base64
+    let bannerData = null
+    try {
+      const img = new Image()
+      img.crossOrigin = 'anonymous'
+      await new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = reject
+        img.src = '/hero-laptop.png'
+      })
+      const canvas = document.createElement('canvas')
+      canvas.width = img.width
+      canvas.height = img.height
+      canvas.getContext('2d').drawImage(img, 0, 0)
+      bannerData = canvas.toDataURL('image/png')
+    } catch (e) { /* banner optional */ }
+
     const pdf = new jsPDF('p', 'mm', 'a4')
     const pw = pdf.internal.pageSize.getWidth()
     const ph = pdf.internal.pageSize.getHeight()
@@ -129,6 +146,13 @@ export default function ResultPage() {
 
     // ===== PAGE 1 =====
     addHeaderBar()
+
+    // Banner image
+    if (bannerData) {
+      const bannerH = (pw * 600) / 1440 // maintain aspect ratio
+      pdf.addImage(bannerData, 'PNG', 0, y - 4, pw, bannerH)
+      y += bannerH - 2
+    }
 
     // Title block
     pdf.setFontSize(20)
@@ -296,7 +320,7 @@ export default function ResultPage() {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <img src="/year-theme-logo.png" alt="Rotaract 3234" className="h-16 sm:h-20 w-auto mx-auto mb-4" />
+          <img src="/hero-laptop.png" alt="Rotaract 3234" className="h-20 sm:h-28 w-auto mx-auto mb-4 rounded-2xl shadow-sm" />
           <h1 className="text-3xl sm:text-4xl font-extrabold text-navy-950">
             Application Submitted!
           </h1>
