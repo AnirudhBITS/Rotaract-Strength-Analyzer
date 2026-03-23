@@ -46,143 +46,233 @@ export default function ResultPage() {
 
   const handleDownload = () => {
     const pdf = new jsPDF('p', 'mm', 'a4')
-    const pageWidth = pdf.internal.pageSize.getWidth()
-    const margin = 20
-    const contentWidth = pageWidth - margin * 2
-    let y = 20
+    const pw = pdf.internal.pageSize.getWidth()
+    const ph = pdf.internal.pageSize.getHeight()
+    const m = 20
+    const cw = pw - m * 2
+    let y = 0
 
-    const checkPage = (needed = 10) => {
-      if (y + needed > pdf.internal.pageSize.getHeight() - 15) {
+    // Colors
+    const pink = [231, 30, 109]
+    const sky = [66, 184, 233]
+    const gold = [255, 200, 41]
+    const orange = [249, 115, 22]
+    const dark = [30, 30, 48]
+    const gray = [100, 100, 120]
+    const lightGray = [140, 140, 160]
+
+    const checkPage = (needed = 12) => {
+      if (y + needed > ph - 20) {
+        // Footer on current page
+        addFooterBar()
         pdf.addPage()
-        y = 20
+        y = 12
+        addHeaderBar()
       }
     }
 
-    // Title
-    pdf.setFontSize(18)
+    const addHeaderBar = () => {
+      // Gradient-like top bar (4 color blocks)
+      const barH = 2.5
+      const segW = pw / 4
+      pdf.setFillColor(...sky); pdf.rect(0, 0, segW, barH, 'F')
+      pdf.setFillColor(...pink); pdf.rect(segW, 0, segW, barH, 'F')
+      pdf.setFillColor(...gold); pdf.rect(segW * 2, 0, segW, barH, 'F')
+      pdf.setFillColor(...orange); pdf.rect(segW * 3, 0, segW, barH, 'F')
+      y = barH + 8
+    }
+
+    const addFooterBar = () => {
+      const barH = 2.5
+      const segW = pw / 4
+      pdf.setFillColor(...sky); pdf.rect(0, ph - barH, segW, barH, 'F')
+      pdf.setFillColor(...pink); pdf.rect(segW, ph - barH, segW, barH, 'F')
+      pdf.setFillColor(...gold); pdf.rect(segW * 2, ph - barH, segW, barH, 'F')
+      pdf.setFillColor(...orange); pdf.rect(segW * 3, ph - barH, segW, barH, 'F')
+    }
+
+    const addSection = (icon, title) => {
+      checkPage(16)
+      y += 3
+      pdf.setFillColor(...pink)
+      pdf.roundedRect(m, y, 6, 6, 1.5, 1.5, 'F')
+      pdf.setFontSize(7)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(255, 255, 255)
+      pdf.text(icon, m + 3, y + 4.2, { align: 'center' })
+
+      pdf.setFontSize(11)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(...dark)
+      pdf.text(title, m + 9, y + 4.5)
+      y += 8
+
+      pdf.setDrawColor(230, 230, 240)
+      pdf.setLineWidth(0.3)
+      pdf.line(m, y, pw - m, y)
+      y += 4
+    }
+
+    const addItem = (label, value, color) => {
+      checkPage(8)
+      pdf.setFontSize(9.5)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(...(color || pink))
+      pdf.text(label, m + 4, y)
+
+      pdf.setFont('helvetica', 'normal')
+      pdf.setTextColor(...dark)
+      const lines = pdf.splitTextToSize(value, cw - 20)
+      pdf.text(lines, m + 18, y)
+      y += lines.length * 4.5 + 2.5
+    }
+
+    // ===== PAGE 1 =====
+    addHeaderBar()
+
+    // Title block
+    pdf.setFontSize(20)
     pdf.setFont('helvetica', 'bold')
-    pdf.text('Rotaract 3234 DO Screening', pageWidth / 2, y, { align: 'center' })
+    pdf.setTextColor(...dark)
+    pdf.text('Rotaract 3234', pw / 2, y, { align: 'center' })
     y += 7
 
-    pdf.setFontSize(9)
+    pdf.setFontSize(10)
     pdf.setFont('helvetica', 'normal')
-    pdf.setTextColor(100)
-    pdf.text('District Officials Recruitment — Expression of Interest Acknowledgement', pageWidth / 2, y, { align: 'center' })
-    y += 12
-
-    // Application number box
-    pdf.setDrawColor(200, 210, 240)
-    pdf.setFillColor(240, 244, 255)
-    const boxW = 70
-    const boxX = (pageWidth - boxW) / 2
-    pdf.roundedRect(boxX, y, boxW, 20, 3, 3, 'FD')
-
-    pdf.setFontSize(7)
-    pdf.setTextColor(120)
-    pdf.setFont('helvetica', 'normal')
-    pdf.text('APPLICATION NUMBER', pageWidth / 2, y + 7, { align: 'center' })
-
-    pdf.setFontSize(14)
-    pdf.setTextColor(26, 26, 46)
-    pdf.setFont('helvetica', 'bold')
-    pdf.text(applicationNumber || 'N/A', pageWidth / 2, y + 15, { align: 'center' })
-    y += 28
-
-    // Applicant name
-    pdf.setFontSize(11)
-    pdf.setTextColor(50)
-    pdf.setFont('helvetica', 'normal')
-    pdf.text('Applicant: ', pageWidth / 2 - pdf.getTextWidth('Applicant: ' + name) / 2, y)
-    pdf.setFont('helvetica', 'bold')
-    pdf.text(name, pageWidth / 2 - pdf.getTextWidth('Applicant: ' + name) / 2 + pdf.getTextWidth('Applicant: '), y)
-    y += 6
-
-    const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
-    pdf.setFontSize(9)
-    pdf.setFont('helvetica', 'normal')
-    pdf.setTextColor(140)
-    pdf.text(`Submitted on ${dateStr}`, pageWidth / 2, y, { align: 'center' })
-    y += 12
-
-    // Section helper
-    const addSectionTitle = (title) => {
-      checkPage(15)
-      pdf.setFontSize(12)
-      pdf.setFont('helvetica', 'bold')
-      pdf.setTextColor(26, 26, 46)
-      pdf.text(title, margin, y)
-      y += 1
-      pdf.setDrawColor(220)
-      pdf.setLineWidth(0.5)
-      pdf.line(margin, y, pageWidth - margin, y)
-      y += 6
-    }
-
-    const addBullet = (text) => {
-      checkPage(8)
-      pdf.setFontSize(10)
-      pdf.setFont('helvetica', 'normal')
-      pdf.setTextColor(60)
-      const lines = pdf.splitTextToSize(text, contentWidth - 8)
-      pdf.text('•', margin + 2, y)
-      pdf.text(lines, margin + 8, y)
-      y += lines.length * 5 + 2
-    }
-
-    // Top 5 Strengths
-    addSectionTitle('Top 5 Strengths')
-    analysis.top5.forEach((t, i) => {
-      const score = analysis.ranked.find(r => r.theme === t)?.score
-      addBullet(`#${i + 1}  ${t}  (${score} pts)`)
-    })
+    pdf.setTextColor(...pink)
+    pdf.text('District Officials Screening — Acknowledgement', pw / 2, y, { align: 'center' })
     y += 4
 
-    // Recommended Positions
-    addSectionTitle('Recommended Positions')
-    if (recommendedPositions?.length) {
-      recommendedPositions.forEach((p, i) => {
-        addBullet(`Match #${i + 1}:  ${p.title}  —  ${p.category}`)
-      })
-    } else {
-      addBullet('N/A')
-    }
+    pdf.setFontSize(8)
+    pdf.setTextColor(...lightGray)
+    pdf.text('Let\'s Unite Together  |  Rotary Year 2026-27', pw / 2, y, { align: 'center' })
+    y += 10
+
+    // Application number card
+    pdf.setFillColor(245, 245, 255)
+    pdf.setDrawColor(210, 215, 240)
+    pdf.roundedRect(m + 20, y, cw - 40, 24, 4, 4, 'FD')
+
+    pdf.setFontSize(7)
+    pdf.setTextColor(...lightGray)
+    pdf.setFont('helvetica', 'normal')
+    pdf.text('APPLICATION NUMBER', pw / 2, y + 8, { align: 'center' })
+
+    pdf.setFontSize(16)
+    pdf.setTextColor(...dark)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text(applicationNumber || 'N/A', pw / 2, y + 18, { align: 'center' })
+    y += 30
+
+    // Applicant info row
+    pdf.setFillColor(250, 250, 255)
+    pdf.roundedRect(m, y, cw, 14, 3, 3, 'F')
+
+    pdf.setFontSize(10)
+    pdf.setTextColor(...dark)
+    pdf.setFont('helvetica', 'bold')
+    pdf.text(name, m + 5, y + 6)
+
+    const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })
+    pdf.setFontSize(8)
+    pdf.setFont('helvetica', 'normal')
+    pdf.setTextColor(...lightGray)
+    pdf.text(dateStr, pw - m - 5, y + 6, { align: 'right' })
+
+    pdf.setFontSize(7.5)
+    pdf.text('Applicant', m + 5, y + 11)
+    pdf.text('Submitted', pw - m - 5, y + 11, { align: 'right' })
+    y += 20
+
+    // Top 5 Strengths
+    addSection('#', 'Your Top 5 Strengths')
+    analysis.top5.forEach((t, i) => {
+      checkPage(8)
+      // Rank badge
+      pdf.setFillColor(...(i === 0 ? gold : i === 1 ? sky : [230, 230, 240]))
+      pdf.roundedRect(m + 4, y - 3.5, 10, 5.5, 1.5, 1.5, 'F')
+      pdf.setFontSize(8)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(...(i < 2 ? [255, 255, 255] : dark))
+      pdf.text(`#${i + 1}`, m + 9, y, { align: 'center' })
+
+      pdf.setFontSize(10)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setTextColor(...dark)
+      pdf.text(t, m + 18, y)
+
+      const score = analysis.ranked.find(r => r.theme === t)?.score
+      pdf.setFontSize(8)
+      pdf.setTextColor(...lightGray)
+      pdf.text(`${score} pts`, pw - m, y, { align: 'right' })
+      y += 7
+    })
     y += 2
 
-    // Note
-    checkPage(25)
-    pdf.setFillColor(255, 251, 240)
+    // Recommended Positions
+    addSection('★', 'Recommended Positions')
+    if (recommendedPositions?.length) {
+      recommendedPositions.forEach((p, i) => {
+        addItem(`${i + 1}.`, `${p.title}  —  ${p.category}`, sky)
+      })
+    } else {
+      addItem('—', 'N/A', lightGray)
+    }
+
+    // Preferred Positions
+    addSection('♥', 'Your Preferred Positions')
+    selectedPositions.forEach((t, i) => {
+      addItem(`${i + 1}.`, t, gold)
+    })
+
+    // What Next
+    addSection('→', 'What Next?')
+    addItem('1.', 'Our team will schedule a screening meet with the District core team.', orange)
+    addItem('2.', 'You will receive a confirmation on your selection via mail.', orange)
+
+    // Note box
+    checkPage(28)
+    y += 2
+    pdf.setFillColor(255, 252, 245)
     pdf.setDrawColor(240, 224, 176)
-    pdf.roundedRect(margin, y, contentWidth, 22, 2, 2, 'FD')
+    pdf.roundedRect(m, y, cw, 24, 3, 3, 'FD')
     pdf.setFontSize(7.5)
     pdf.setFont('helvetica', 'bold')
-    pdf.setTextColor(80)
-    pdf.text('Please note:', margin + 4, y + 5)
+    pdf.setTextColor(180, 140, 50)
+    pdf.text('PLEASE NOTE', m + 4, y + 5)
     pdf.setFont('helvetica', 'normal')
-    pdf.setTextColor(100)
+    pdf.setFontSize(7)
+    pdf.setTextColor(...gray)
     const noteText = 'These suggestions are intended to give you an insight into the roles that may align well with your strengths. Selecting a suggested position does not guarantee a confirmed District Official posting. All submissions will undergo a dedicated screening process, and the final decision rests with the District Core Team.'
-    const noteLines = pdf.splitTextToSize(noteText, contentWidth - 8)
-    pdf.text(noteLines, margin + 4, y + 10)
-    y += 28
-
-    // Your Preferred Positions
-    addSectionTitle('Your Preferred Positions')
-    selectedPositions.forEach((t, i) => {
-      addBullet(`${i + 1}.  ${t}`)
-    })
-    y += 8
+    const noteLines = pdf.splitTextToSize(noteText, cw - 8)
+    pdf.text(noteLines, m + 4, y + 10)
+    y += 30
 
     // Footer
-    checkPage(15)
-    pdf.setDrawColor(220)
+    checkPage(18)
+    pdf.setDrawColor(230, 230, 240)
     pdf.setLineWidth(0.3)
-    pdf.line(margin, y, pageWidth - margin, y)
+    pdf.line(m, y, pw - m, y)
     y += 6
-    pdf.setFontSize(8)
-    pdf.setTextColor(160)
+    pdf.setFontSize(7.5)
+    pdf.setTextColor(...lightGray)
     pdf.setFont('helvetica', 'normal')
-    pdf.text('This is a system-generated acknowledgement from the Rotaract 3234 DO Screening.', pageWidth / 2, y, { align: 'center' })
-    y += 5
-    pdf.text(`Please retain your Application Number ${applicationNumber || ''} for future reference.`, pageWidth / 2, y, { align: 'center' })
+    pdf.text('This is a system-generated acknowledgement from Rotaract 3234 DO Screening.', pw / 2, y, { align: 'center' })
+    y += 4
+    pdf.setFont('helvetica', 'bold')
+    pdf.setTextColor(...dark)
+    pdf.text(`Application: ${applicationNumber || ''}  |  Retain for future reference`, pw / 2, y, { align: 'center' })
+    y += 6
+    pdf.setFontSize(7)
+    pdf.setFont('helvetica', 'normal')
+    pdf.setTextColor(...sky)
+    pdf.text('Made with ', pw / 2 - 18, y)
+    pdf.setTextColor(66, 133, 244)
+    pdf.text('\u2764', pw / 2 - 4, y)
+    pdf.setTextColor(...sky)
+    pdf.text(' by Secretarial Team 26-27', pw / 2, y)
+
+    addFooterBar()
 
     pdf.save(`Acknowledgement-${applicationNumber || 'RSA'}.pdf`)
   }
@@ -192,8 +282,7 @@ export default function ResultPage() {
       {/* Header */}
       <header className="bg-white border-b border-border-subtle">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-lg font-bold text-navy-900">
-            <img src="/year-theme-logo.png" alt="Year Theme" className="h-8 w-auto" />
+          <Link to="/" className="text-lg font-bold text-navy-900">
             Rotaract<span className="text-primary-600">3234</span>
           </Link>
         </div>

@@ -236,12 +236,12 @@ export default function FormPage() {
     <div className="min-h-screen bg-surface">
       {/* Header */}
       <header className="bg-white border-b border-border-subtle sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-lg font-bold text-navy-900 font-[var(--font-display)]">
-            <img src="/year-theme-logo.png" alt="Year Theme" className="h-8 w-auto" />
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+          <Link to="/" className="text-base sm:text-lg font-bold text-navy-900 font-[var(--font-display)] flex-shrink-0">
             Rotaract<span className="text-primary-600">3234</span>
           </Link>
-          <span className="text-sm text-navy-500">District Officials Recruitment</span>
+          <span className="text-xs sm:text-sm text-navy-500 text-right hidden sm:block">District Officials Recruitment</span>
+          <span className="text-[10px] text-navy-400 text-right sm:hidden">DO Recruitment</span>
         </div>
       </header>
 

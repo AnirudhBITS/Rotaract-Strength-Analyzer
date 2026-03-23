@@ -83,8 +83,11 @@ function buildAcknowledgementHtml({ name, applicationNumber, top5, recommendatio
     <!-- Footer -->
     <div style="height:4px;background:linear-gradient(to right,#42b8e9,#e71e6d,#ffc829,#f97316)"></div>
     <div style="background:#1e1e30;padding:16px 28px;text-align:center">
-      <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.5)">
-        Let's <span style="color:#e71e6d;font-weight:700">Unite</span> Together &middot; Rotaract District 3234 &middot; 2025-26
+      <p style="margin:0 0 6px;font-size:12px;color:rgba(255,255,255,0.5)">
+        Let's <span style="color:#e71e6d;font-weight:700">Unite</span> Together &middot; Rotaract District 3234 &middot; 2026-27
+      </p>
+      <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35)">
+        Made with &#128153; by Secretarial Team 26-27
       </p>
     </div>
   </div>
@@ -123,6 +126,11 @@ function buildAdminNotificationHtml({ name, email, phone, clubName, applicationN
       </p>
     </div>
     <div style="height:4px;background:linear-gradient(to right,#42b8e9,#e71e6d,#ffc829,#f97316)"></div>
+    <div style="background:#1e1e30;padding:12px 28px;text-align:center">
+      <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35)">
+        Made with &#128153; by Secretarial Team 26-27
+      </p>
+    </div>
   </div>
 </body>
 </html>`;
@@ -206,6 +214,11 @@ async function sendOTPEmail(email, otp) {
       <p style="font-size:12px;color:#8587b3;margin-top:16px">This code expires in 5 minutes. Do not share it with anyone.</p>
     </div>
     <div style="height:4px;background:linear-gradient(to right,#42b8e9,#e71e6d,#ffc829,#f97316)"></div>
+    <div style="background:#1e1e30;padding:12px 28px;text-align:center">
+      <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35)">
+        Made with &#128153; by Secretarial Team 26-27
+      </p>
+    </div>
   </div>
 </body></html>`;
 
