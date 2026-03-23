@@ -196,7 +196,7 @@ async function checkDuplicate(req, res, next) {
   }
 }
 
-async function sendOTP(req, res, next) {
+async function sendOTP(req, res) {
   try {
     const { email } = req.body;
     if (!email) {
@@ -208,7 +208,8 @@ async function sendOTP(req, res, next) {
 
     res.json({ message: 'OTP sent successfully' });
   } catch (err) {
-    next(err);
+    console.error('OTP send error:', err.message);
+    res.status(503).json({ error: 'Unable to send verification code right now. Please try again in a few minutes.' });
   }
 }
 
