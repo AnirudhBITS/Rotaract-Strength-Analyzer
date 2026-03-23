@@ -1,19 +1,9 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
-const crypto = require('crypto');
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, '../../uploads'));
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = `${crypto.randomBytes(16).toString('hex')}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
-  },
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   const allowed = ['image/jpeg', 'image/png', 'image/webp'];
@@ -27,7 +17,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE, 10) || 5 * 1024 * 1024 },
+  limits: { fileSize: parseInt(process.env.MAX_FILE_SIZE, 10) || 30 * 1024 * 1024 },
 });
 
 router.post('/photo', upload.single('photo'), (req, res) => {
@@ -35,9 +25,10 @@ router.post('/photo', upload.single('photo'), (req, res) => {
     return res.status(400).json({ error: 'No file uploaded' });
   }
 
+  const base64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
   res.json({
-    filename: req.file.filename,
-    path: `/uploads/${req.file.filename}`,
+    path: base64,
   });
 });
 

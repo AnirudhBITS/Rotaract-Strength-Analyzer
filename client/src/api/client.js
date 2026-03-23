@@ -3,6 +3,7 @@ const BACKEND_URL = API_URL.replace(/\/api\/?$/, '');
 
 export const getFileUrl = (path) => {
   if (!path) return '';
+  if (path.startsWith('data:')) return path;
   if (path.startsWith('http')) return path;
   return `${BACKEND_URL}${path}`;
 };
