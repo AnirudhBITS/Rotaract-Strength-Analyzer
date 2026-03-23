@@ -50,26 +50,25 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        {/* Hero banner background — responsive */}
-        <picture className="absolute inset-0">
+      <section className="relative overflow-hidden bg-white">
+        {/* Thin top bar with year theme colors */}
+        <div className="h-1 bg-gradient-to-r from-sky-400 via-primary-500 via-gold-400 to-accent-500" />
+
+        {/* Banner image — displayed above content */}
+        <picture>
           <source media="(max-width: 768px)" srcSet="/hero-mobile.png" />
           <source media="(max-width: 1440px)" srcSet="/hero-laptop.png" />
-          <img src="/hero-desktop.png" alt="" className="w-full h-full object-cover object-top" />
+          <img src="/hero-desktop.png" alt="Rotaract District 3234 — Let's Unite Together" className="w-full h-auto" />
         </picture>
-        <div className="absolute inset-0 bg-white/60" />
 
-        {/* Thin top bar with year theme colors */}
-        <div className="relative h-1 bg-gradient-to-r from-sky-400 via-primary-500 via-gold-400 to-accent-500" />
-
-        <div className="relative max-w-5xl mx-auto px-6 py-20 sm:py-28 lg:py-36 text-center">
+        <div className="max-w-5xl mx-auto px-6 py-10 sm:py-16 lg:py-20 text-center">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex flex-col items-center mb-8"
+            className="flex flex-col items-center mb-6"
           >
-            <span className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold tracking-widest uppercase text-primary-700 bg-white/80 backdrop-blur-sm rounded-full border border-primary-100">
+            <span className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold tracking-widest uppercase text-primary-700 bg-primary-50 rounded-full border border-primary-100">
               Rotary Year 2026-27
             </span>
           </motion.div>

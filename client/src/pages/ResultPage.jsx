@@ -155,20 +155,15 @@ export default function ResultPage() {
     }
 
     // Title block
-    pdf.setFontSize(20)
+    pdf.setFontSize(14)
     pdf.setFont('helvetica', 'bold')
-    pdf.setTextColor(...dark)
-    pdf.text('Rotaract 3234', pw / 2, y, { align: 'center' })
-    y += 7
-
-    pdf.setFontSize(10)
-    pdf.setFont('helvetica', 'normal')
     pdf.setTextColor(...pink)
     pdf.text('District Officials Screening — Acknowledgement', pw / 2, y, { align: 'center' })
-    y += 4
+    y += 6
 
-    pdf.setFontSize(8)
-    pdf.setTextColor(...lightGray)
+    pdf.setFontSize(11)
+    pdf.setFont('helvetica', 'normal')
+    pdf.setTextColor(...dark)
     pdf.text('Let\'s Unite Together  |  Rotary Year 2026-27', pw / 2, y, { align: 'center' })
     y += 10
 
@@ -209,7 +204,7 @@ export default function ResultPage() {
     y += 20
 
     // Top 5 Strengths
-    addSection('#', 'Your Top 5 Strengths')
+    addSection('5', 'Your Top 5 Strengths')
     analysis.top5.forEach((t, i) => {
       checkPage(8)
       // Rank badge
@@ -234,7 +229,7 @@ export default function ResultPage() {
     y += 2
 
     // Recommended Positions
-    addSection('★', 'Recommended Positions')
+    addSection('R', 'Recommended Positions')
     if (recommendedPositions?.length) {
       recommendedPositions.forEach((p, i) => {
         addItem(`${i + 1}.`, `${p.title}  —  ${p.category}`, sky)
@@ -244,13 +239,13 @@ export default function ResultPage() {
     }
 
     // Preferred Positions
-    addSection('♥', 'Your Preferred Positions')
+    addSection('P', 'Your Preferred Positions')
     selectedPositions.forEach((t, i) => {
       addItem(`${i + 1}.`, t, gold)
     })
 
     // What Next
-    addSection('→', 'What Next?')
+    addSection('?', 'What Next?')
     addItem('1.', 'Our team will schedule a screening meet with the District core team.', orange)
     addItem('2.', 'You will receive a confirmation on your selection via mail.', orange)
 
@@ -290,11 +285,8 @@ export default function ResultPage() {
     pdf.setFontSize(7)
     pdf.setFont('helvetica', 'normal')
     pdf.setTextColor(...sky)
-    pdf.text('Made with ', pw / 2 - 18, y)
-    pdf.setTextColor(66, 133, 244)
-    pdf.text('\u2764', pw / 2 - 4, y)
     pdf.setTextColor(...sky)
-    pdf.text(' by Secretarial Team 26-27', pw / 2, y)
+    pdf.text('Made with <3 by Secretarial Team 26-27', pw / 2, y, { align: 'center' })
 
     addFooterBar()
 
