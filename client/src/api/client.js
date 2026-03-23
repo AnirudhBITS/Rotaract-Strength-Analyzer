@@ -69,4 +69,9 @@ export const allocationApi = {
   deallocate: (positionId, applicantId) => request('DELETE', '/allocation/positions/' + positionId + '/deallocate/' + applicantId),
   searchApplicants: (q) => request('GET', '/allocation/search-applicants?q=' + encodeURIComponent(q)),
   getUnallocated: () => request('GET', '/allocation/unallocated-applicants'),
+  getAllAllocations: () => request('GET', '/allocation/all-allocations'),
+  confirmAllocation: (allocationId) => request('POST', '/allocation/confirm/' + allocationId),
+  removeConfirmation: (allocationId) => request('DELETE', '/allocation/confirm/' + allocationId),
+  getFinalisedOfficials: (params) => request('GET', '/allocation/finalised' + buildQuery(params)),
+  exportFinalisedOfficials: (params) => request('GET', '/allocation/finalised/export' + buildQuery(params), null, { responseType: 'arraybuffer' }),
 };

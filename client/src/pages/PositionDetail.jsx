@@ -112,7 +112,8 @@ export default function PositionDetail() {
     )
   }
 
-  const { position, userChoices, systemSuggestions, currentAllocation } = data
+  const { position, userChoices, systemSuggestions, currentAllocations = [] } = data
+  const allocatedIds = currentAllocations.map((a) => a.applicant_id)
 
   return (
     <div className="min-h-screen bg-surface">
@@ -127,38 +128,44 @@ export default function PositionDetail() {
               <p className="text-xs text-navy-500">{position.category} &middot; {position.tier}</p>
             </div>
           </div>
-          {currentAllocation && (
+          {currentAllocations.length > 0 && (
             <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
-              Filled
+              {currentAllocations.length} Allocated
             </span>
           )}
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-8">
-        {/* Current Allocation */}
-        {currentAllocation && (
+        {/* Current Allocations */}
+        {currentAllocations.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-8 p-6 bg-emerald-50 rounded-2xl border border-emerald-200"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <HiOutlineCheckCircle className="w-6 h-6 text-emerald-600" />
-                <div>
-                  <h3 className="text-sm font-bold text-emerald-900">Currently Allocated</h3>
-                  <p className="text-sm text-emerald-700">
-                    This position is assigned. You can deallocate to reassign.
-                  </p>
-                </div>
+            <div className="flex items-center gap-3 mb-4">
+              <HiOutlineCheckCircle className="w-6 h-6 text-emerald-600" />
+              <div>
+                <h3 className="text-sm font-bold text-emerald-900">Currently Allocated ({currentAllocations.length})</h3>
+                <p className="text-sm text-emerald-700">You can add more or deallocate existing ones.</p>
               </div>
-              <button
-                onClick={() => handleDeallocate(currentAllocation.applicant_id, 'this candidate')}
-                className="px-4 py-2 text-sm font-semibold text-red-600 bg-white border border-red-200 rounded-xl hover:bg-red-50 transition-colors"
-              >
-                Deallocate
-              </button>
+            </div>
+            <div className="space-y-2">
+              {currentAllocations.map((a) => (
+                <div key={a.applicant_id} className="flex items-center justify-between p-3 bg-white rounded-xl">
+                  <div>
+                    <p className="text-sm font-semibold text-navy-900">{a.applicant_name}</p>
+                    <p className="text-xs text-navy-500">{a.club_name} &middot; {a.applicant_email}</p>
+                  </div>
+                  <button
+                    onClick={() => handleDeallocate(a.applicant_id, a.applicant_name)}
+                    className="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
             </div>
           </motion.div>
         )}
@@ -184,7 +191,7 @@ export default function PositionDetail() {
                   preferenceLabel={`Choice #${candidate.preference_order}`}
                   onAllocate={handleAllocate}
                   allocating={allocating}
-                  isCurrentlyAllocated={!!currentAllocation}
+                  allocatedIds={allocatedIds}
                 />
               ))}
             </div>
@@ -212,7 +219,7 @@ export default function PositionDetail() {
                   preferenceLabel="System Suggested"
                   onAllocate={handleAllocate}
                   allocating={allocating}
-                  isCurrentlyAllocated={!!currentAllocation}
+                  allocatedIds={allocatedIds}
                   isSystemSuggestion
                 />
               ))}
@@ -221,8 +228,7 @@ export default function PositionDetail() {
         </section>
 
         {/* Allocate Any Applicant */}
-        {!currentAllocation && (
-          <section className="mt-10 pt-8 border-t border-border-subtle">
+        <section className="mt-10 pt-8 border-t border-border-subtle">
             <div className="flex items-center gap-2 mb-4">
               <HiOutlineUserPlus className="w-5 h-5 text-navy-500" />
               <h2 className="text-lg font-bold text-navy-950">Allocate Any Applicant</h2>
@@ -314,14 +320,14 @@ export default function PositionDetail() {
               <p className="text-sm text-navy-400 italic py-4">No applicants found for "{searchQuery}"</p>
             )}
           </section>
-        )}
       </main>
     </div>
   )
 }
 
-function CandidateCard({ candidate, preferenceLabel, onAllocate, allocating, isCurrentlyAllocated, isSystemSuggestion }) {
-  const isAllocatedElsewhere = candidate.allocated_to !== null
+function CandidateCard({ candidate, preferenceLabel, onAllocate, allocating, allocatedIds = [], isSystemSuggestion }) {
+  const isAllocatedHere = allocatedIds.includes(candidate.id)
+  const isAllocatedElsewhere = candidate.allocated_to !== null && !isAllocatedHere
 
   return (
     <motion.div
@@ -376,7 +382,12 @@ function CandidateCard({ candidate, preferenceLabel, onAllocate, allocating, isC
         </div>
 
         {/* Allocate Button */}
-        {!isAllocatedElsewhere && !isCurrentlyAllocated && (
+        {isAllocatedHere && (
+          <span className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-100 rounded-lg">
+            Allocated
+          </span>
+        )}
+        {!isAllocatedElsewhere && !isAllocatedHere && (
           <button
             onClick={() => onAllocate(candidate.id, candidate.name)}
             disabled={allocating === candidate.id}

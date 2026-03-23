@@ -8,6 +8,8 @@ import AdminDashboard from './pages/AdminDashboard'
 import ApplicantDetail from './pages/ApplicantDetail'
 import PositionsPage from './pages/PositionsPage'
 import PositionDetail from './pages/PositionDetail'
+import AllAllocationsPage from './pages/AllAllocationsPage'
+import FinalisedOfficialsPage from './pages/FinalisedOfficialsPage'
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -52,6 +54,8 @@ export default function App() {
         <Route path="/admin/applicant/:id" element={<ApplicantDetail />} />
         <Route path="/admin/positions" element={<PositionsPage />} />
         <Route path="/admin/positions/:positionId" element={<PositionDetail />} />
+        <Route path="/admin/all-allocations" element={<AllAllocationsPage />} />
+        <Route path="/admin/finalised" element={<FinalisedOfficialsPage />} />
       </Routes>
     </ErrorBoundary>
   )

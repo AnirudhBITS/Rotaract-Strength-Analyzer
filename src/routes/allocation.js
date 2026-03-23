@@ -10,6 +10,11 @@ const {
   getAllocationSummary,
   searchApplicants,
   getUnallocatedApplicants,
+  getAllAllocations,
+  confirmAllocation,
+  removeConfirmation,
+  getFinalisedOfficials,
+  exportFinalisedOfficials,
 } = require('../controllers/allocationController');
 
 const router = express.Router();
@@ -21,6 +26,9 @@ router.get('/summary', getAllocationSummary);
 router.get('/positions/:positionId/candidates', getPositionCandidates);
 router.get('/search-applicants', searchApplicants);
 router.get('/unallocated-applicants', getUnallocatedApplicants);
+router.get('/all-allocations', getAllAllocations);
+router.get('/finalised', getFinalisedOfficials);
+router.get('/finalised/export', exportFinalisedOfficials);
 
 router.post(
   '/positions/:positionId/allocate',
@@ -36,6 +44,18 @@ router.delete(
   '/positions/:positionId/deallocate/:applicantId',
   authorize('super_admin', 'admin'),
   deallocateCandidate
+);
+
+router.post(
+  '/confirm/:allocationId',
+  authorize('super_admin', 'admin'),
+  confirmAllocation
+);
+
+router.delete(
+  '/confirm/:allocationId',
+  authorize('super_admin', 'admin'),
+  removeConfirmation
 );
 
 module.exports = router;

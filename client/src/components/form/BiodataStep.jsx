@@ -46,7 +46,7 @@ const REQUIRED = {
   personal: ['age', 'dateOfBirth', 'profession'],
   health: ['bloodGroup'],
   details: ['address'],
-  photos: [],
+  photos: ['professionalPhoto', 'casualPhoto'],
 }
 
 function PhotoUpload({ label, value, onChange, id }) {
@@ -205,7 +205,7 @@ export default function BiodataStep({ data, onChange, errors, clubs = [], onSect
 
   const goTo = (i) => setSection(i)
 
-  const totalRequired = ['name', 'email', 'phone', 'clubName', 'rotaryId', 'age', 'dateOfBirth', 'profession', 'bloodGroup', 'address']
+  const totalRequired = ['name', 'email', 'phone', 'clubName', 'rotaryId', 'age', 'dateOfBirth', 'profession', 'bloodGroup', 'address', 'professionalPhoto', 'casualPhoto']
   const filledRequired = totalRequired.filter((f) => data[f] && String(data[f]).trim())
   const progress = (filledRequired.length / totalRequired.length) * 100
 
@@ -298,12 +298,15 @@ export default function BiodataStep({ data, onChange, errors, clubs = [], onSect
           const done = isSectionDone(s.id) && celebrated.has(s.id)
           const active = i === section
           const hasErr = (REQUIRED[s.id] || []).some((f) => errors[f])
+          const locked = !otpVerified && i > 0
           return (
             <button
               key={s.id}
-              onClick={() => goTo(i)}
+              onClick={() => !locked && goTo(i)}
+              disabled={locked}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 border-2
-                ${active ? 'bg-primary-50 border-primary-400 text-primary-700'
+                ${locked ? 'opacity-40 cursor-not-allowed bg-navy-50 border-border-subtle text-navy-400'
+                  : active ? 'bg-primary-50 border-primary-400 text-primary-700'
                   : hasErr ? 'bg-red-50 border-red-200 text-red-600'
                   : done ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                   : 'bg-white border-border-subtle text-navy-500 hover:border-navy-200'}`}

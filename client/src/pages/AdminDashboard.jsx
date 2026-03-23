@@ -6,7 +6,7 @@ import {
   HiOutlineUsers, HiOutlineClock, HiOutlineCheckCircle,
   HiOutlineStar, HiOutlineXCircle, HiOutlineMagnifyingGlass,
   HiOutlineFunnel, HiOutlineArrowDownTray, HiOutlineArrowRightOnRectangle,
-  HiOutlineSquares2X2,
+  HiOutlineSquares2X2, HiOutlineClipboardDocumentCheck, HiOutlineShieldCheck,
 } from 'react-icons/hi2'
 import { adminApi } from '../api/client'
 
@@ -111,6 +111,20 @@ export default function AdminDashboard() {
             >
               <HiOutlineSquares2X2 className="w-4 h-4" />
               Positions
+            </Link>
+            <Link
+              to="/admin/all-allocations"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-navy-700 bg-white border border-border-subtle rounded-xl hover:bg-navy-50 transition-colors"
+            >
+              <HiOutlineClipboardDocumentCheck className="w-4 h-4" />
+              All Allocations
+            </Link>
+            <Link
+              to="/admin/finalised"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-colors"
+            >
+              <HiOutlineShieldCheck className="w-4 h-4" />
+              Finalised
             </Link>
             <button
               onClick={handleExport}

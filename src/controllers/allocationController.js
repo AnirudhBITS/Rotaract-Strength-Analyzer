@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const XLSX = require('xlsx');
 const { DISTRICT_POSITIONS } = require('../config/constants');
 
 /**
@@ -38,6 +39,7 @@ async function getPositions(req, res, next) {
       interest_count: interestMap[pos.id] || 0,
       suggestion_count: suggestionMap[pos.id] || 0,
       allocated: allocationMap[pos.id] || [],
+      allocated_count: (allocationMap[pos.id] || []).length,
       is_filled: (allocationMap[pos.id] || []).length > 0,
     }));
 
@@ -116,15 +118,17 @@ async function getPositionCandidates(req, res, next) {
         : null,
     });
 
-    // Also get applicants from the same category who haven't chosen this specific position
-    // but whose strengths match (broader pool)
-    const currentAllocation = await db('allocations').where('position_id', positionId).first();
+    // Get all current allocations for this position
+    const currentAllocations = await db('allocations')
+      .select('allocations.*', 'applicants.name as applicant_name', 'applicants.email as applicant_email', 'applicants.club_name')
+      .leftJoin('applicants', 'allocations.applicant_id', 'applicants.id')
+      .where('allocations.position_id', positionId);
 
     res.json({
       position,
       userChoices: userChoices.map(enrichCandidate),
       systemSuggestions: systemSuggestions.map(enrichCandidate),
-      currentAllocation: currentAllocation || null,
+      currentAllocations,
     });
   } catch (err) {
     next(err);
@@ -303,6 +307,246 @@ async function getUnallocatedApplicants(req, res, next) {
   }
 }
 
+/**
+ * Get all allocations grouped by position with applicant details
+ */
+async function getAllAllocations(req, res, next) {
+  try {
+    const allocations = await db('allocations')
+      .select(
+        'allocations.id as allocation_id',
+        'allocations.applicant_id',
+        'allocations.position_id',
+        'allocations.notes',
+        'allocations.created_at as allocated_at',
+        'applicants.name',
+        'applicants.email',
+        'applicants.phone',
+        'applicants.club_name',
+        'applicants.professional_photo'
+      )
+      .leftJoin('applicants', 'allocations.applicant_id', 'applicants.id')
+      .orderBy('allocations.position_id', 'asc');
+
+    // Check which allocations are confirmed (exist in finalised_officials)
+    const finalisedRows = await db('finalised_officials').select('applicant_id');
+    const finalisedSet = new Set(finalisedRows.map((r) => r.applicant_id));
+
+    // Build position map from constants
+    const positionMap = Object.fromEntries(DISTRICT_POSITIONS.map((p) => [p.id, p]));
+
+    // Group by position
+    const grouped = {};
+    for (const a of allocations) {
+      const posId = a.position_id;
+      if (!grouped[posId]) {
+        const pos = positionMap[posId];
+        grouped[posId] = {
+          position_id: posId,
+          position_title: pos?.title || `Position #${posId}`,
+          category: pos?.category || '',
+          tier: pos?.tier || '',
+          allocations: [],
+        };
+      }
+      grouped[posId].allocations.push({
+        allocation_id: a.allocation_id,
+        applicant_id: a.applicant_id,
+        name: a.name,
+        email: a.email,
+        phone: a.phone,
+        club_name: a.club_name,
+        professional_photo: a.professional_photo,
+        notes: a.notes,
+        allocated_at: a.allocated_at,
+        is_confirmed: finalisedSet.has(a.applicant_id),
+      });
+    }
+
+    res.json({ positions: Object.values(grouped) });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Confirm an allocation - copy data to finalised_officials table
+ */
+async function confirmAllocation(req, res, next) {
+  try {
+    const { allocationId } = req.params;
+
+    const allocation = await db('allocations').where({ id: allocationId }).first();
+    if (!allocation) {
+      return res.status(404).json({ error: 'Allocation not found' });
+    }
+
+    // Check if already confirmed
+    const existing = await db('finalised_officials').where({ applicant_id: allocation.applicant_id }).first();
+    if (existing) {
+      return res.status(409).json({ error: 'This allocation is already confirmed' });
+    }
+
+    // Get applicant details
+    const applicant = await db('applicants').where({ id: allocation.applicant_id }).first();
+    if (!applicant) {
+      return res.status(404).json({ error: 'Applicant not found' });
+    }
+
+    // Get position title
+    const position = DISTRICT_POSITIONS.find((p) => p.id === allocation.position_id);
+    const positionTitle = position?.title || `Position #${allocation.position_id}`;
+
+    // Insert into finalised_officials
+    await db('finalised_officials').insert({
+      applicant_id: applicant.id,
+      position_id: allocation.position_id,
+      position_title: positionTitle,
+      name: applicant.name,
+      email: applicant.email,
+      phone: applicant.phone,
+      club_name: applicant.club_name,
+      rotary_id: applicant.rotary_id,
+      age: applicant.age,
+      date_of_birth: applicant.date_of_birth,
+      profession: applicant.profession,
+      blood_group: applicant.blood_group,
+      willing_to_donate: applicant.willing_to_donate,
+      address: applicant.address,
+      professional_photo: applicant.professional_photo,
+      casual_photo: applicant.casual_photo,
+      confirmed_by: req.admin.id,
+      confirmed_at: db.fn.now(),
+    });
+
+    res.status(201).json({
+      message: `${applicant.name} confirmed as ${positionTitle}`,
+    });
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: 'This allocation is already confirmed' });
+    }
+    next(err);
+  }
+}
+
+/**
+ * Remove confirmation - delete from finalised_officials
+ */
+async function removeConfirmation(req, res, next) {
+  try {
+    const { allocationId } = req.params;
+
+    const allocation = await db('allocations').where({ id: allocationId }).first();
+    if (!allocation) {
+      return res.status(404).json({ error: 'Allocation not found' });
+    }
+
+    const deleted = await db('finalised_officials')
+      .where({ applicant_id: allocation.applicant_id })
+      .del();
+
+    if (!deleted) {
+      return res.status(404).json({ error: 'This allocation is not confirmed' });
+    }
+
+    res.json({ message: 'Confirmation removed' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Get all finalised officials with optional filters
+ */
+async function getFinalisedOfficials(req, res, next) {
+  try {
+    const { blood_group, willing_to_donate } = req.query;
+
+    let query = db('finalised_officials')
+      .select('*')
+      .orderBy('position_id', 'asc');
+
+    if (blood_group) {
+      query = query.where('blood_group', blood_group);
+    }
+
+    if (willing_to_donate !== undefined && willing_to_donate !== '') {
+      query = query.where('willing_to_donate', willing_to_donate === 'true' || willing_to_donate === '1');
+    }
+
+    const officials = await query;
+
+    res.json({ officials });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
+ * Export finalised officials as Excel
+ */
+async function exportFinalisedOfficials(req, res, next) {
+  try {
+    const { blood_group, willing_to_donate } = req.query;
+
+    let query = db('finalised_officials')
+      .select('*')
+      .orderBy('position_id', 'asc');
+
+    if (blood_group) {
+      query = query.where('blood_group', blood_group);
+    }
+
+    if (willing_to_donate !== undefined && willing_to_donate !== '') {
+      query = query.where('willing_to_donate', willing_to_donate === 'true' || willing_to_donate === '1');
+    }
+
+    const officials = await query;
+
+    const rows = officials.map((o) => ({
+      'Position': o.position_title,
+      'Name': o.name,
+      'Email': o.email,
+      'Phone': o.phone,
+      'Club': o.club_name,
+      'Rotary ID': o.rotary_id,
+      'Age': o.age,
+      'DOB': o.date_of_birth ? new Date(o.date_of_birth).toLocaleDateString('en-IN') : '',
+      'Profession': o.profession,
+      'Blood Group': o.blood_group,
+      'Willing to Donate': o.willing_to_donate ? 'Yes' : 'No',
+      'Address': o.address,
+      'Confirmed At': o.confirmed_at ? new Date(o.confirmed_at).toLocaleDateString('en-IN') : '',
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    // Auto-width columns
+    if (rows.length > 0) {
+      const colWidths = Object.keys(rows[0]).map((key) => {
+        const maxLen = Math.max(
+          key.length,
+          ...rows.map((r) => String(r[key] || '').length)
+        );
+        return { wch: Math.min(maxLen + 2, 40) };
+      });
+      ws['!cols'] = colWidths;
+    }
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Finalised Officials');
+
+    const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=finalised-officials-${new Date().toISOString().split('T')[0]}.xlsx`);
+    res.send(buffer);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   getPositions,
   getPositionCandidates,
@@ -311,4 +555,9 @@ module.exports = {
   getAllocationSummary,
   searchApplicants,
   getUnallocatedApplicants,
+  getAllAllocations,
+  confirmAllocation,
+  removeConfirmation,
+  getFinalisedOfficials,
+  exportFinalisedOfficials,
 };
