@@ -48,6 +48,7 @@ export default function ApplicantDetail() {
   const [status, setStatus] = useState('')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token')
@@ -78,6 +79,20 @@ export default function ApplicantDetail() {
       toast.error('Update failed')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Are you sure you want to delete "${data.applicant.name}"? This cannot be undone.`)) return
+    setDeleting(true)
+    try {
+      await adminApi.deleteApplicant(id)
+      toast.success('Applicant deleted')
+      navigate('/admin')
+    } catch (e) {
+      toast.error(e.message || 'Delete failed')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -182,6 +197,13 @@ export default function ApplicantDetail() {
                 className="w-full px-4 py-2.5 text-sm font-semibold text-white bg-primary-600 rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Save Changes'}
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="w-full px-4 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 mt-3"
+              >
+                {deleting ? 'Deleting...' : 'Delete Applicant'}
               </button>
             </div>
           </div>

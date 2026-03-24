@@ -280,6 +280,31 @@ async function exportApplicants(req, res, next) {
   }
 }
 
+async function deleteApplicant(req, res, next) {
+  const trx = await db.transaction();
+  try {
+    const { id } = req.params;
+
+    const applicant = await trx('applicants').where({ id }).first();
+    if (!applicant) {
+      await trx.rollback();
+      return res.status(404).json({ error: 'Applicant not found' });
+    }
+
+    await trx('role_preferences').where({ applicant_id: id }).del();
+    await trx('strength_scores').where({ applicant_id: id }).del();
+    await trx('assessment_responses').where({ applicant_id: id }).del();
+    await trx('applicants').where({ id }).del();
+
+    await trx.commit();
+
+    res.json({ message: `Applicant "${applicant.name}" (${applicant.application_number}) deleted successfully` });
+  } catch (err) {
+    await trx.rollback();
+    next(err);
+  }
+}
+
 module.exports = {
   login,
   getApplicants,
@@ -287,4 +312,5 @@ module.exports = {
   updateApplicantStatus,
   getDashboardStats,
   exportApplicants,
+  deleteApplicant,
 };

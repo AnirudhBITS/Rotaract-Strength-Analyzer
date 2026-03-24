@@ -59,6 +59,7 @@ export const adminApi = {
   getApplicant: (id) => request('GET', '/admin/applicants/' + id),
   updateStatus: (id, data) => request('PATCH', '/admin/applicants/' + id + '/status', data),
   exportAll: () => request('GET', '/admin/export', null, { responseType: 'arraybuffer' }),
+  deleteApplicant: (id) => request('DELETE', '/admin/applicants/' + id),
 };
 
 export const allocationApi = {

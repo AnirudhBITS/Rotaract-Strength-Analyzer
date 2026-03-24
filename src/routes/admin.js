@@ -9,6 +9,7 @@ const {
   updateApplicantStatus,
   getDashboardStats,
   exportApplicants,
+  deleteApplicant,
 } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -41,5 +42,7 @@ router.patch(
 );
 
 router.get('/export', authenticate, authorize('super_admin', 'admin'), exportApplicants);
+
+router.delete('/applicants/:id', authenticate, authorize('super_admin'), deleteApplicant);
 
 module.exports = router;
