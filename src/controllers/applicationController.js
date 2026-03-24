@@ -5,27 +5,38 @@ const { setOTP, verifyOTP } = require('../utils/otpStore');
 const { DISTRICT_POSITIONS } = require('../config/constants');
 const { ROTARACT_CLUBS } = require('../config/clubs');
 
-async function generateApplicationNumber(trx, year) {
-  const MAX_ATTEMPTS = 10;
+async function generateApplicationNumber(year) {
   const prefix = `RSA-${year}-`;
 
-  // Get the current max sequence number for this year
-  const [[{ maxNum }]] = await trx.raw(
-    "SELECT COALESCE(MAX(CAST(SUBSTRING(application_number, -4) AS UNSIGNED)), 0) as maxNum FROM applicants WHERE application_number LIKE ?",
-    [`${prefix}%`]
-  );
+  // Dedicated short transaction: lock ONE counter row, increment, release
+  // Lock held for ~1-2ms, so 20 concurrent submissions queue up in ~40ms total
+  const seq = await db.transaction(async (counterTrx) => {
+    const rows = await counterTrx('application_counters')
+      .where('year', year)
+      .forUpdate()
+      .select('next_seq');
 
-  let seq = maxNum + 1;
+    if (rows.length > 0) {
+      const currentSeq = rows[0].next_seq;
+      await counterTrx('application_counters')
+        .where('year', year)
+        .update({ next_seq: currentSeq + 1 });
+      return currentSeq;
+    }
 
-  // Verify uniqueness — if taken, increment until we find a free one
-  for (let i = 0; i < MAX_ATTEMPTS; i++) {
-    const candidate = `${prefix}${String(seq).padStart(4, '0')}`;
-    const existing = await trx('applicants').where('application_number', candidate).first();
-    if (!existing) return candidate;
-    seq++;
-  }
+    // First application this year — initialize from existing data
+    const [[{ maxNum }]] = await counterTrx.raw(
+      "SELECT COALESCE(MAX(CAST(SUBSTRING_INDEX(application_number, '-', -1) AS UNSIGNED)), 0) as maxNum FROM applicants WHERE application_number LIKE ?",
+      [`${prefix}%`]
+    );
+    const startSeq = maxNum + 1;
+    await counterTrx('application_counters').insert({ year, next_seq: startSeq + 1 });
+    return startSeq;
+  });
 
-  throw new Error('Unable to generate unique application number after maximum attempts');
+  const candidate = `${prefix}${String(seq).padStart(4, '0')}`;
+  console.log(`[APP-NUM] year=${year} seq=${seq} generated=${candidate}`);
+  return candidate;
 }
 
 async function submitApplication(req, res, next) {
@@ -37,8 +48,8 @@ async function submitApplication(req, res, next) {
     const trx = await db.transaction();
 
     try {
-      // Step 1: Generate a verified-unique application number
-      const applicationNumber = await generateApplicationNumber(trx, year);
+      // Step 1: Generate unique application number (uses its own fast transaction)
+      const applicationNumber = await generateApplicationNumber(year);
 
       // Step 2: Insert applicant biodata
       const [applicantId] = await trx('applicants').insert({
