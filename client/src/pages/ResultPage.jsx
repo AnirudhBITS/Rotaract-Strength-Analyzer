@@ -37,11 +37,20 @@ const fadeUp = {
 export default function ResultPage() {
   const { state } = useLocation()
 
-  if (!state?.analysis) {
+  // Fall back to sessionStorage if location state is lost (e.g. page reload on laptop)
+  let resultData = state
+  if (!resultData?.analysis) {
+    try {
+      const saved = sessionStorage.getItem('rsa_result')
+      if (saved) resultData = JSON.parse(saved)
+    } catch (e) {}
+  }
+
+  if (!resultData?.analysis) {
     return <Navigate to="/" replace />
   }
 
-  const { analysis, name, applicationNumber, selectedPositions, recommendedPositions } = state
+  const { analysis, name, applicationNumber, selectedPositions, recommendedPositions } = resultData
   const maxScore = analysis.ranked[0]?.score || 1
 
   const handleDownload = async () => {

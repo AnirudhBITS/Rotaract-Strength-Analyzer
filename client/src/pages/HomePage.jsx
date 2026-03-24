@@ -202,12 +202,12 @@ export default function HomePage() {
         <div className="h-1 bg-gradient-to-r from-sky-400 via-primary-500 via-gold-400 to-accent-500" />
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col items-center gap-3">
           <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
-            <p className="text-sm text-white/60 font-medium">Rotaract 3234 DO Screening</p>
-            <p className="text-sm text-white/40">
+            <p className="text-sm text-white font-medium">Rotaract 3234 DO Screening</p>
+            <p className="text-sm text-white">
               Let's <span className="text-primary-400 font-bold">Unite</span> Together &middot; 2026-27
             </p>
           </div>
-          <p className="text-xs text-white/30">Made with 💙 by Secretarial Team 26-27</p>
+          <p className="text-xs text-white">Made with 💙 by Secretarial Team 26-27</p>
         </div>
       </footer>
     </div>

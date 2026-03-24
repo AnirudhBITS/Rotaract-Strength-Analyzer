@@ -111,6 +111,8 @@ export default function FormPage() {
     if (!biodata.profession.trim()) errors.profession = 'Profession is required'
     if (!biodata.bloodGroup) errors.bloodGroup = 'Blood group is required'
     if (!biodata.address.trim()) errors.address = 'Address is required'
+    if (!biodata.professionalPhoto) errors.professionalPhoto = 'Professional photo is required'
+    if (!biodata.casualPhoto) errors.casualPhoto = 'Casual photo is required'
     setBiodataErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -202,6 +204,19 @@ export default function FormPage() {
       clearDraft()
       try { sessionStorage.removeItem('rsa_biodata_state') } catch (e) {}
       toast.success('Application submitted successfully!')
+
+      // Persist result in sessionStorage so it survives page reloads
+      const resultState = {
+        analysis: data.analysis,
+        name: biodata.name,
+        applicationNumber: data.applicationNumber,
+        selectedPositions: selectedPositions.map(
+          (id) => positions.find((p) => p.id === id)?.title
+        ),
+        recommendedPositions: recommendations,
+      }
+      try { sessionStorage.setItem('rsa_result', JSON.stringify(resultState)) } catch (e) {}
+
       navigate('/result', {
         state: {
           analysis: data.analysis,

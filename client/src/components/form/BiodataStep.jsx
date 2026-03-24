@@ -222,13 +222,26 @@ export default function BiodataStep({ data, onChange, errors, clubs = [], onSect
     if (otpCooldown > 0) return
     setOtpSending(true)
     try {
+      // Check for duplicate email before sending OTP
+      const dupRes = await applicationApi.checkDuplicate({ email: data.email, phone: '' })
+      if (dupRes.data?.duplicate) {
+        toast.error(dupRes.data.message || 'An application with this email already exists')
+        setOtpSending(false)
+        return
+      }
       await applicationApi.sendOTP({ email: data.email })
       setOtpSent(true)
       setOtpValue('')
       toast.success(otpSent ? 'New code sent!' : 'Verification code sent!')
       setOtpCooldown(60)
       const t = setInterval(() => setOtpCooldown((p) => { if (p <= 1) { clearInterval(t); return 0 } return p - 1 }), 1000)
-    } catch (e) { toast.error('Failed to send code. Please try again.') }
+    } catch (e) {
+      if (e.response?.status === 409 && e.response?.data?.duplicate) {
+        toast.error(e.response.data.message)
+      } else {
+        toast.error('Failed to send code. Please try again.')
+      }
+    }
     finally { setOtpSending(false) }
   }
 
@@ -536,8 +549,14 @@ export default function BiodataStep({ data, onChange, errors, clubs = [], onSect
 
             {current.id === 'photos' && (
               <>
-                <PhotoUpload label="Professional Photo" id="professionalPhoto" value={data.professionalPhoto} onChange={(path) => onChange({ ...data, professionalPhoto: path })} />
-                <PhotoUpload label="Casual Photo" id="casualPhoto" value={data.casualPhoto} onChange={(path) => onChange({ ...data, casualPhoto: path })} />
+                <div>
+                  <PhotoUpload label="Professional Photo *" id="professionalPhoto" value={data.professionalPhoto} onChange={(path) => onChange({ ...data, professionalPhoto: path })} />
+                  {errors.professionalPhoto && <p className="text-red-500 text-xs mt-1">{errors.professionalPhoto}</p>}
+                </div>
+                <div>
+                  <PhotoUpload label="Casual Photo *" id="casualPhoto" value={data.casualPhoto} onChange={(path) => onChange({ ...data, casualPhoto: path })} />
+                  {errors.casualPhoto && <p className="text-red-500 text-xs mt-1">{errors.casualPhoto}</p>}
+                </div>
               </>
             )}
 
