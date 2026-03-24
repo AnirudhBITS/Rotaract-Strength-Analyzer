@@ -98,7 +98,6 @@ const DISTRICT_POSITIONS = [
 
   // Specialized
   { id: 17, title: 'Membership Development Team', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'associate' },
-  { id: 18, title: 'Head - Orientation', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'lead' },
 
   // International Service
   { id: 19, title: 'Deputy - International Service', category: ROLE_CATEGORIES.SERVICE_AVENUES, tier: 'deputy' },
