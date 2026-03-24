@@ -6,6 +6,9 @@ const { DISTRICT_POSITIONS } = require('../config/constants');
 const { ROTARACT_CLUBS } = require('../config/clubs');
 
 async function submitApplication(req, res, next) {
+  const MAX_RETRIES = 3;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
   const trx = await db.transaction();
 
   try {
@@ -15,10 +18,10 @@ async function submitApplication(req, res, next) {
       preferredPositions,
     } = req.body;
 
-    // Generate application number: RSA-YYYY-NNNN (based on max existing number)
+    // Generate application number: RSA-YYYY-NNNN (based on max existing number, locked to prevent races)
     const year = new Date().getFullYear();
     const [[{ maxNum }]] = await trx.raw(
-      "SELECT COALESCE(MAX(CAST(SUBSTRING(application_number, -4) AS UNSIGNED)), 0) as maxNum FROM applicants WHERE application_number LIKE ?",
+      "SELECT COALESCE(MAX(CAST(SUBSTRING(application_number, -4) AS UNSIGNED)), 0) as maxNum FROM applicants WHERE application_number LIKE ? FOR UPDATE",
       [`RSA-${year}-%`]
     );
     const seq = String(maxNum + 1).padStart(4, '0');
@@ -145,6 +148,9 @@ async function submitApplication(req, res, next) {
 
     if (err.code === 'ER_DUP_ENTRY') {
       const msg = err.sqlMessage || '';
+      if (msg.includes('application_number') && attempt < MAX_RETRIES) {
+        continue; // Retry with a new application number
+      }
       if (msg.includes('email')) {
         return res.status(409).json({ error: 'An application with this email already exists' });
       }
@@ -155,7 +161,9 @@ async function submitApplication(req, res, next) {
     }
 
     next(err);
+    return;
   }
+  } // end retry loop
 }
 
 async function getQuestions(req, res) {
