@@ -103,8 +103,8 @@ const DISTRICT_POSITIONS = [
   // International Service
   { id: 19, title: 'Deputy - International Service', category: ROLE_CATEGORIES.SERVICE_AVENUES, tier: 'deputy' },
   { id: 20, title: 'Associate - International Service', category: ROLE_CATEGORIES.SERVICE_AVENUES, tier: 'associate' },
-  { id: 21, title: 'Head - Inter District Youth Exchange', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'lead' },
-  { id: 22, title: 'Associate - Inter District Youth Exchange', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'associate' },
+  { id: 21, title: 'Head - Rotaract Inter District Exchange', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'lead' },
+  { id: 22, title: 'Head - Rotaract Inter Club Exchange', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'lead' },
 
   // Communications & Media
   { id: 23, title: 'Head - Editorial Board', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'lead' },
@@ -124,6 +124,9 @@ const DISTRICT_POSITIONS = [
   { id: 37, title: 'Associate - Public Image', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'associate' },
   { id: 38, title: 'Deputy - World Record Team', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'deputy' },
   { id: 39, title: 'Associate - World Record Team', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'associate' },
+  { id: 40, title: 'Head - Orientation Team', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'lead' },
+  { id: 41, title: 'Secretary - Annual District Rotaract Assembly', category: ROLE_CATEGORIES.EVENT_MANAGEMENT, tier: 'lead' },
+  { id: 42, title: 'Co - Chairperson - Annual District Rotaract Assembly', category: ROLE_CATEGORIES.EVENT_MANAGEMENT, tier: 'lead' },
 ];
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
