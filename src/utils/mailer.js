@@ -1,14 +1,17 @@
 const nodemailer = require('nodemailer');
 
+const smtpPort = parseInt(process.env.SMTP_PORT, 10) || 587;
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.hostinger.com',
-  port: parseInt(process.env.SMTP_PORT, 10) || 465,
-  secure: parseInt(process.env.SMTP_PORT, 10) === 465,
+  host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+  port: smtpPort,
+  secure: smtpPort === 465,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
 });
+
+const SENDER = `"Rotaract 3234 DO Screening" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`;
 
 const ADMIN_BCC = ['3234drs2627@gmail.com', '3234drr2627@gmail.com', 'rtrvigneshchandran@gmail.com'];
 
@@ -152,7 +155,7 @@ async function sendAcknowledgement({ applicantEmail, name, applicationNumber, to
 
   try {
     await transporter.sendMail({
-      from: `"Rotaract 3234 DO Screening" <${process.env.SMTP_USER}>`,
+      from: SENDER,
       to: applicantEmail,
       subject: `EOI Acknowledged — ${applicationNumber} | Rotaract District 3234`,
       html: applicantHtml,
@@ -181,7 +184,7 @@ async function sendAdminNotification({ name, email, phone, clubName, application
 
   try {
     await transporter.sendMail({
-      from: `"Rotaract 3234 DO Screening" <${process.env.SMTP_USER}>`,
+      from: SENDER,
       to: ADMIN_BCC,
       subject: `New EOI: ${name} (${applicationNumber}) — ${clubName}`,
       html: adminHtml,
@@ -224,7 +227,7 @@ async function sendOTPEmail(email, otp) {
 
   try {
     await transporter.sendMail({
-      from: `"Rotaract 3234 DO Screening" <${process.env.SMTP_USER}>`,
+      from: SENDER,
       to: email,
       subject: 'Your Verification Code — Rotaract EOI',
       html,
