@@ -249,8 +249,9 @@ export default function BiodataStep({ data, onChange, errors, clubs = [], onSect
     if (otpValue.length !== 6) { toast.error('Please enter the 6-digit code'); return }
     setOtpVerifying(true)
     try {
-      await applicationApi.verifyOTP({ email: data.email, otp: otpValue })
+      const { data: verifyData } = await applicationApi.verifyOTP({ email: data.email, otp: otpValue })
       setOtpVerified(true)
+      onChange({ ...data, applicationNumber: verifyData.applicationNumber })
       setCelebrated((p) => new Set([...p, 'verification']))
       setCelebration(CELEBRATIONS.verification)
     } catch (err) { toast.error(err.response?.data?.error || 'Verification failed.') }
@@ -371,6 +372,12 @@ export default function BiodataStep({ data, onChange, errors, clubs = [], onSect
                     </div>
                     <h3 className="text-lg font-extrabold text-emerald-700">Email Verified!</h3>
                     <p className="mt-1 text-sm text-navy-500">{data.email}</p>
+                    {data.applicationNumber && (
+                      <div className="mt-4 inline-block px-4 py-2 bg-primary-50 border border-primary-200 rounded-xl">
+                        <p className="text-xs text-navy-500 font-medium">Your Application Number</p>
+                        <p className="text-lg font-extrabold text-primary-700 tracking-wide">{data.applicationNumber}</p>
+                      </div>
+                    )}
                     <p className="mt-4 text-xs text-navy-400">Tap <strong>Next →</strong> to start filling your profile.</p>
                   </div>
                 ) : (

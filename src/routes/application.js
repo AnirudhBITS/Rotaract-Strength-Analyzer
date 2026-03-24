@@ -23,6 +23,7 @@ router.post('/verify-otp', verifyOTPHandler);
 router.post(
   '/submit',
   [
+    body('applicationNumber').trim().notEmpty().withMessage('Application number is required'),
     body('biodata.name').trim().notEmpty().withMessage('Name is required'),
     body('biodata.email').isEmail().normalizeEmail().withMessage('Valid email is required'),
     body('biodata.phone').trim().notEmpty().withMessage('Phone number is required'),

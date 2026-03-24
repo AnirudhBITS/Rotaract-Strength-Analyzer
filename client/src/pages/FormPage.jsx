@@ -14,7 +14,7 @@ const INITIAL_BIODATA = {
   clubName: '', rotaryId: '', age: '', dateOfBirth: '',
   profession: '', bloodGroup: '', willingToDonate: false,
   address: '', pastPositions: '', hobbies: '',
-  professionalPhoto: '', casualPhoto: '',
+  professionalPhoto: '', casualPhoto: '', applicationNumber: '',
 }
 
 const SESSION_KEY = 'rsa_form_draft'
@@ -192,6 +192,7 @@ export default function FormPage() {
       }))
 
       const { data } = await applicationApi.submit({
+        applicationNumber: biodata.applicationNumber,
         biodata: {
           ...biodata,
           age: parseInt(biodata.age, 10),
