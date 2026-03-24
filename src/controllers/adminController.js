@@ -36,15 +36,11 @@ async function login(req, res, next) {
 async function getApplicants(req, res, next) {
   try {
     const {
-      page = 1,
-      limit = 20,
       status,
       search,
       sortBy = 'created_at',
       sortOrder = 'desc',
     } = req.query;
-
-    const offset = (page - 1) * limit;
 
     let baseQuery = db('applicants');
 
@@ -61,23 +57,11 @@ async function getApplicants(req, res, next) {
       });
     }
 
-    const [{ total }] = await baseQuery.clone().count('* as total');
-
-    const applicants = await baseQuery.clone()
+    const applicants = await baseQuery
       .select('*')
-      .orderBy(sortBy, sortOrder)
-      .limit(limit)
-      .offset(offset);
+      .orderBy(sortBy, sortOrder);
 
-    res.json({
-      applicants,
-      pagination: {
-        page: parseInt(page, 10),
-        limit: parseInt(limit, 10),
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    });
+    res.json({ applicants });
   } catch (err) {
     next(err);
   }

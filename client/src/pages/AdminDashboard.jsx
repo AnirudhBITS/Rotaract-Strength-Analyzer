@@ -30,11 +30,9 @@ export default function AdminDashboard() {
   const navigate = useNavigate()
   const [stats, setStats] = useState(null)
   const [applicants, setApplicants] = useState([])
-  const [pagination, setPagination] = useState({})
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [page, setPage] = useState(1)
 
   const adminInfo = JSON.parse(localStorage.getItem('admin_info') || '{}')
 
@@ -45,17 +43,16 @@ export default function AdminDashboard() {
       return
     }
     fetchData()
-  }, [page, search, statusFilter])
+  }, [search, statusFilter])
 
   async function fetchData() {
     try {
       const [statsRes, applicantsRes] = await Promise.all([
         adminApi.getDashboard(),
-        adminApi.getApplicants({ page, limit: 20, search, status: statusFilter || undefined }),
+        adminApi.getApplicants({ search, status: statusFilter || undefined }),
       ])
       setStats(statsRes.data)
       setApplicants(applicantsRes.data.applicants)
-      setPagination(applicantsRes.data.pagination)
     } catch (e) {
       toast.error('Failed to load data')
     } finally {
@@ -163,7 +160,7 @@ export default function AdminDashboard() {
             <input
               type="text"
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, email, or club..."
               className="w-full pl-10 pr-4 py-3 text-sm text-navy-900 bg-white border border-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 placeholder:text-navy-400"
             />
@@ -172,7 +169,7 @@ export default function AdminDashboard() {
             <HiOutlineFunnel className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-navy-400" />
             <select
               value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
+              onChange={(e) => setStatusFilter(e.target.value)}
               className="pl-9 pr-8 py-3 text-sm text-navy-900 bg-white border border-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 appearance-none"
             >
               <option value="">All Status</option>
@@ -246,31 +243,10 @@ export default function AdminDashboard() {
             </table>
           </div>
 
-          {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-border-subtle">
-              <p className="text-sm text-navy-500">
-                Showing {(page - 1) * 20 + 1}–{Math.min(page * 20, pagination.total)} of {pagination.total}
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="px-3 py-1.5 text-sm font-medium text-navy-600 bg-white border border-border-subtle rounded-lg hover:bg-navy-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Prev
-                </button>
-                <span className="px-3 py-1.5 text-sm font-semibold text-primary-600 bg-primary-50 rounded-lg">
-                  {page}
-                </span>
-                <button
-                  onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                  disabled={page === pagination.totalPages}
-                  className="px-3 py-1.5 text-sm font-medium text-navy-600 bg-white border border-border-subtle rounded-lg hover:bg-navy-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
-              </div>
+          {/* Total count */}
+          {applicants.length > 0 && (
+            <div className="px-6 py-3 border-t border-border-subtle">
+              <p className="text-sm text-navy-500">Total: {applicants.length} applicants</p>
             </div>
           )}
         </div>
