@@ -5,165 +5,175 @@ const { setOTP, verifyOTP } = require('../utils/otpStore');
 const { DISTRICT_POSITIONS } = require('../config/constants');
 const { ROTARACT_CLUBS } = require('../config/clubs');
 
+async function generateApplicationNumber(trx, year) {
+  const MAX_ATTEMPTS = 10;
+  const prefix = `RSA-${year}-`;
+
+  // Get the current max sequence number for this year
+  const [[{ maxNum }]] = await trx.raw(
+    "SELECT COALESCE(MAX(CAST(SUBSTRING(application_number, -4) AS UNSIGNED)), 0) as maxNum FROM applicants WHERE application_number LIKE ?",
+    [`${prefix}%`]
+  );
+
+  let seq = maxNum + 1;
+
+  // Verify uniqueness — if taken, increment until we find a free one
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    const candidate = `${prefix}${String(seq).padStart(4, '0')}`;
+    const existing = await trx('applicants').where('application_number', candidate).first();
+    if (!existing) return candidate;
+    seq++;
+  }
+
+  throw new Error('Unable to generate unique application number after maximum attempts');
+}
+
 async function submitApplication(req, res, next) {
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 5;
+  const { biodata, responses, preferredPositions } = req.body;
+  const year = new Date().getFullYear();
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-  const trx = await db.transaction();
+    const trx = await db.transaction();
 
-  try {
-    const {
-      biodata,
-      responses,
-      preferredPositions,
-    } = req.body;
+    try {
+      // Step 1: Generate a verified-unique application number
+      const applicationNumber = await generateApplicationNumber(trx, year);
 
-    // Generate application number: RSA-YYYY-NNNN (based on max existing number, locked to prevent races)
-    const year = new Date().getFullYear();
-    const [[{ maxNum }]] = await trx.raw(
-      "SELECT COALESCE(MAX(CAST(SUBSTRING(application_number, -4) AS UNSIGNED)), 0) as maxNum FROM applicants WHERE application_number LIKE ? FOR UPDATE",
-      [`RSA-${year}-%`]
-    );
-    const seq = String(maxNum + 1).padStart(4, '0');
-    const applicationNumber = `RSA-${year}-${seq}`;
+      // Step 2: Insert applicant biodata
+      const [applicantId] = await trx('applicants').insert({
+        application_number: applicationNumber,
+        name: biodata.name,
+        email: biodata.email,
+        phone: biodata.phone,
+        secondary_phone: biodata.secondaryPhone || null,
+        club_name: biodata.clubName,
+        rotary_id: biodata.rotaryId,
+        age: biodata.age,
+        date_of_birth: biodata.dateOfBirth,
+        profession: biodata.profession,
+        blood_group: biodata.bloodGroup,
+        willing_to_donate: biodata.willingToDonate,
+        address: biodata.address,
+        past_positions: biodata.pastPositions || null,
+        hobbies: biodata.hobbies || null,
+        professional_photo: biodata.professionalPhoto || null,
+        casual_photo: biodata.casualPhoto || null,
+      });
 
-    // Insert applicant biodata
-    const [applicantId] = await trx('applicants').insert({
-      application_number: applicationNumber,
-      name: biodata.name,
-      email: biodata.email,
-      phone: biodata.phone,
-      secondary_phone: biodata.secondaryPhone || null,
-      club_name: biodata.clubName,
-      rotary_id: biodata.rotaryId,
-      age: biodata.age,
-      date_of_birth: biodata.dateOfBirth,
-      profession: biodata.profession,
-      blood_group: biodata.bloodGroup,
-      willing_to_donate: biodata.willingToDonate,
-      address: biodata.address,
-      past_positions: biodata.pastPositions || null,
-      hobbies: biodata.hobbies || null,
-      professional_photo: biodata.professionalPhoto || null,
-      casual_photo: biodata.casualPhoto || null,
-    });
+      // Step 3: Insert assessment responses
+      const responseRows = responses.map((r) => ({
+        applicant_id: applicantId,
+        question_id: r.questionId,
+        selected_option: r.selectedOption,
+      }));
+      await trx('assessment_responses').insert(responseRows);
 
-    // Insert assessment responses
-    const responseRows = responses.map((r) => ({
-      applicant_id: applicantId,
-      question_id: r.questionId,
-      selected_option: r.selectedOption,
-    }));
-    await trx('assessment_responses').insert(responseRows);
+      // Step 4: Calculate strength scores
+      const analysis = analyzeApplicant(responses);
 
-    // Calculate strength scores
-    const analysis = analyzeApplicant(responses);
+      const scoreRows = analysis.ranked.map((entry) => ({
+        applicant_id: applicantId,
+        theme: entry.theme,
+        score: entry.score,
+        rank: entry.rank,
+      }));
+      await trx('strength_scores').insert(scoreRows);
 
-    // Insert strength scores
-    const scoreRows = analysis.ranked.map((entry) => ({
-      applicant_id: applicantId,
-      theme: entry.theme,
-      score: entry.score,
-      rank: entry.rank,
-    }));
-    await trx('strength_scores').insert(scoreRows);
+      // Step 5: Insert user-chosen role preferences
+      const userPrefs = preferredPositions.map((posId, index) => ({
+        applicant_id: applicantId,
+        position_id: posId,
+        preference_order: index + 1,
+        type: 'user_choice',
+      }));
+      await trx('role_preferences').insert(userPrefs);
 
-    // Insert user-chosen role preferences
-    const userPrefs = preferredPositions.map((posId, index) => ({
-      applicant_id: applicantId,
-      position_id: posId,
-      preference_order: index + 1,
-      type: 'user_choice',
-    }));
-    await trx('role_preferences').insert(userPrefs);
-
-    // Insert system-suggested role preferences (top position from top 3 categories)
-    const tierPriority = { lead: 0, deputy: 1, associate: 2 };
-    let suggestionOrder = 1;
-    for (const rec of analysis.recommendations.slice(0, 3)) {
-      const bestPosition = rec.positions
-        .slice()
-        .sort((a, b) => (tierPriority[a.tier] ?? 3) - (tierPriority[b.tier] ?? 3))[0];
-      if (bestPosition) {
-        await trx('role_preferences').insert({
-          applicant_id: applicantId,
-          position_id: bestPosition.id,
-          preference_order: suggestionOrder++,
-          type: 'system_suggestion',
-        });
-      }
-    }
-
-    await trx.commit();
-
-    // Resolve position titles for emails (non-blocking)
-    const selectedPositionTitles = preferredPositions.map(
-      (id) => DISTRICT_POSITIONS.find((p) => p.id === id)?.title || `Position #${id}`
-    );
-    const recommendationTitles = analysis.recommendations.slice(0, 3).map((rec) => {
+      // Step 6: Insert system-suggested role preferences
       const tierPriority = { lead: 0, deputy: 1, associate: 2 };
-      const best = rec.positions
-        .slice()
-        .sort((a, b) => (tierPriority[a.tier] ?? 3) - (tierPriority[b.tier] ?? 3))[0];
-      return best ? `${best.title} (${rec.category})` : rec.category;
-    });
+      let suggestionOrder = 1;
+      for (const rec of analysis.recommendations.slice(0, 3)) {
+        const bestPosition = rec.positions
+          .slice()
+          .sort((a, b) => (tierPriority[a.tier] ?? 3) - (tierPriority[b.tier] ?? 3))[0];
+        if (bestPosition) {
+          await trx('role_preferences').insert({
+            applicant_id: applicantId,
+            position_id: bestPosition.id,
+            preference_order: suggestionOrder++,
+            type: 'system_suggestion',
+          });
+        }
+      }
 
-    // Send emails in background — don't block the response
-    sendAcknowledgement({
-      applicantEmail: biodata.email,
-      name: biodata.name,
-      applicationNumber,
-      top5: analysis.top5,
-      recommendations: recommendationTitles,
-      selectedPositions: selectedPositionTitles,
-    }).catch(() => {});
+      await trx.commit();
 
-    sendAdminNotification({
-      name: biodata.name,
-      email: biodata.email,
-      phone: biodata.phone,
-      clubName: biodata.clubName,
-      applicationNumber,
-      top5: analysis.top5,
-      recommendations: recommendationTitles,
-      selectedPositions: selectedPositionTitles,
-    }).catch(() => {});
+      // Resolve position titles for emails
+      const selectedPositionTitles = preferredPositions.map(
+        (id) => DISTRICT_POSITIONS.find((p) => p.id === id)?.title || `Position #${id}`
+      );
+      const recommendationTitles = analysis.recommendations.slice(0, 3).map((rec) => {
+        const tp = { lead: 0, deputy: 1, associate: 2 };
+        const best = rec.positions
+          .slice()
+          .sort((a, b) => (tp[a.tier] ?? 3) - (tp[b.tier] ?? 3))[0];
+        return best ? `${best.title} (${rec.category})` : rec.category;
+      });
 
-    res.status(201).json({
-      message: 'Application submitted successfully',
-      applicantId,
-      applicationNumber,
-      analysis: {
+      // Send emails in background
+      sendAcknowledgement({
+        applicantEmail: biodata.email,
+        name: biodata.name,
+        applicationNumber,
         top5: analysis.top5,
-        ranked: analysis.ranked,
-        recommendations: analysis.recommendations.map((r) => ({
-          category: r.category,
-          matchScore: r.matchScore,
-          matchedStrengths: r.matchedStrengths,
-        })),
-      },
-    });
-  } catch (err) {
-    await trx.rollback();
+        recommendations: recommendationTitles,
+        selectedPositions: selectedPositionTitles,
+      }).catch(() => {});
 
-    if (err.code === 'ER_DUP_ENTRY') {
-      const msg = err.sqlMessage || '';
-      if (msg.includes('application_number') && attempt < MAX_RETRIES) {
-        continue; // Retry with a new application number
+      sendAdminNotification({
+        name: biodata.name,
+        email: biodata.email,
+        phone: biodata.phone,
+        clubName: biodata.clubName,
+        applicationNumber,
+        top5: analysis.top5,
+        recommendations: recommendationTitles,
+        selectedPositions: selectedPositionTitles,
+      }).catch(() => {});
+
+      return res.status(201).json({
+        message: 'Application submitted successfully',
+        applicantId,
+        applicationNumber,
+        analysis: {
+          top5: analysis.top5,
+          ranked: analysis.ranked,
+          recommendations: analysis.recommendations.map((r) => ({
+            category: r.category,
+            matchScore: r.matchScore,
+            matchedStrengths: r.matchedStrengths,
+          })),
+        },
+      });
+    } catch (err) {
+      await trx.rollback();
+
+      if (err.code === 'ER_DUP_ENTRY') {
+        const msg = err.sqlMessage || '';
+        if (msg.includes('email')) {
+          return res.status(409).json({ error: 'An application with this email already exists' });
+        }
+        // Application number conflict — retry with next number
+        if (msg.includes('application_number') && attempt < MAX_RETRIES) {
+          continue;
+        }
       }
-      if (msg.includes('email')) {
-        return res.status(409).json({ error: 'An application with this email already exists' });
-      }
-      if (msg.includes('application_number')) {
-        return res.status(409).json({ error: 'Application number conflict. Please try again.' });
-      }
-      return res.status(409).json({ error: 'A duplicate entry was detected. Please try again.' });
+
+      return next(err);
     }
-
-    next(err);
-    return;
   }
-  } // end retry loop
+
+  return res.status(409).json({ error: 'Unable to generate application number. Please try again.' });
 }
 
 async function getQuestions(req, res) {
