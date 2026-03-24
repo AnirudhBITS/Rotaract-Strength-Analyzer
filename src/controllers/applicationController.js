@@ -128,7 +128,7 @@ async function submitApplication(req, res, next) {
         top5: analysis.top5,
         recommendations: recommendationTitles,
         selectedPositions: selectedPositionTitles,
-      }).catch(() => {});
+      }).catch((err) => console.error(`[${applicationNumber}] Acknowledgement email failed:`, err.message));
 
       sendAdminNotification({
         name: biodata.name,
@@ -139,7 +139,7 @@ async function submitApplication(req, res, next) {
         top5: analysis.top5,
         recommendations: recommendationTitles,
         selectedPositions: selectedPositionTitles,
-      }).catch(() => {});
+      }).catch((err) => console.error(`[${applicationNumber}] Admin notification failed:`, err.message));
 
       return res.status(201).json({
         message: 'Application submitted successfully',
