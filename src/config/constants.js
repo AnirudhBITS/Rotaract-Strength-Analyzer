@@ -98,6 +98,7 @@ const DISTRICT_POSITIONS = [
 
   // Specialized
   { id: 17, title: 'Membership Development Team', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'associate' },
+  { id: 18, title: 'Head - Orientation Team', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'lead' },
 
   // International Service
   { id: 19, title: 'Deputy - International Service', category: ROLE_CATEGORIES.SERVICE_AVENUES, tier: 'deputy' },
@@ -123,7 +124,6 @@ const DISTRICT_POSITIONS = [
   { id: 37, title: 'Associate - Public Image', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'associate' },
   { id: 38, title: 'Deputy - World Record Team', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'deputy' },
   { id: 39, title: 'Associate - World Record Team', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'associate' },
-  { id: 40, title: 'Head - Orientation Team', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'lead' },
   { id: 41, title: 'Secretary - Annual District Rotaract Assembly', category: ROLE_CATEGORIES.EVENT_MANAGEMENT, tier: 'lead' },
   { id: 42, title: 'Co - Chairperson - Annual District Rotaract Assembly', category: ROLE_CATEGORIES.EVENT_MANAGEMENT, tier: 'lead' },
 ];
