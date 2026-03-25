@@ -129,10 +129,6 @@ async function submitApplication(req, res, next) {
 
       await trx.commit();
 
-      // Clean up the reservation (outside transaction — if this fails, 24h cleanup handles it)
-      await db('application_reservations').where('email', biodata.email).del()
-        .catch((cleanupErr) => console.warn(`[${applicationNumber}] Reservation cleanup failed:`, cleanupErr.message));
-
       // Resolve position titles for emails
       const selectedPositionTitles = preferredPositions.map(
         (id) => DISTRICT_POSITIONS.find((p) => p.id === id)?.title || `Position #${id}`
@@ -180,21 +176,25 @@ async function submitApplication(req, res, next) {
           })),
         },
       });
-  } catch (err) {
-    await trx.rollback();
+    } catch (err) {
+      await trx.rollback();
 
-    if (err.code === 'ER_DUP_ENTRY') {
-      const msg = err.sqlMessage || '';
-      if (msg.includes('email')) {
-        return res.status(409).json({ error: 'An application with this email already exists' });
+      if (err.code === 'ER_DUP_ENTRY') {
+        const msg = err.sqlMessage || '';
+        if (msg.includes('email')) {
+          return res.status(409).json({ error: 'An application with this email already exists' });
+        }
+        // Application number conflict — retry with next number
+        if (msg.includes('application_number') && attempt < MAX_RETRIES) {
+          continue;
+        }
       }
-      if (msg.includes('application_number')) {
-        return res.status(409).json({ error: 'This application number has already been used. Please verify your email again.' });
-      }
+
+      return next(err);
     }
-
-    return next(err);
   }
+
+  return res.status(409).json({ error: 'Unable to generate application number. Please try again.' });
 }
 
 async function getQuestions(req, res) {
