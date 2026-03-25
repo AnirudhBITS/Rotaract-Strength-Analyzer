@@ -61,140 +61,140 @@ async function submitApplication(req, res, next) {
 
   try {
 
-      // Step 2: Insert applicant biodata
-      const [applicantId] = await trx('applicants').insert({
-        application_number: applicationNumber,
-        name: biodata.name,
-        email: biodata.email,
-        phone: biodata.phone,
-        secondary_phone: biodata.secondaryPhone || null,
-        club_name: biodata.clubName,
-        rotary_id: biodata.rotaryId,
-        age: biodata.age,
-        date_of_birth: biodata.dateOfBirth,
-        profession: biodata.profession,
-        blood_group: biodata.bloodGroup,
-        willing_to_donate: biodata.willingToDonate,
-        address: biodata.address,
-        past_positions: biodata.pastPositions || null,
-        hobbies: biodata.hobbies || null,
-        professional_photo: biodata.professionalPhoto || null,
-        casual_photo: biodata.casualPhoto || null,
-      });
+    // Insert applicant biodata
+    const [applicantId] = await trx('applicants').insert({
+      application_number: applicationNumber,
+      name: biodata.name,
+      email: biodata.email,
+      phone: biodata.phone,
+      secondary_phone: biodata.secondaryPhone || null,
+      club_name: biodata.clubName,
+      rotary_id: biodata.rotaryId,
+      age: biodata.age,
+      date_of_birth: biodata.dateOfBirth,
+      profession: biodata.profession,
+      blood_group: biodata.bloodGroup,
+      willing_to_donate: biodata.willingToDonate,
+      address: biodata.address,
+      past_positions: biodata.pastPositions || null,
+      hobbies: biodata.hobbies || null,
+      professional_photo: biodata.professionalPhoto || null,
+      casual_photo: biodata.casualPhoto || null,
+    });
 
-      // Step 3: Insert assessment responses
-      const responseRows = responses.map((r) => ({
-        applicant_id: applicantId,
-        question_id: r.questionId,
-        selected_option: r.selectedOption,
-      }));
-      await trx('assessment_responses').insert(responseRows);
+    // Insert assessment responses
+    const responseRows = responses.map((r) => ({
+      applicant_id: applicantId,
+      question_id: r.questionId,
+      selected_option: r.selectedOption,
+    }));
+    await trx('assessment_responses').insert(responseRows);
 
-      // Step 4: Calculate strength scores
-      const analysis = analyzeApplicant(responses);
+    // Calculate strength scores
+    const analysis = analyzeApplicant(responses);
 
-      const scoreRows = analysis.ranked.map((entry) => ({
-        applicant_id: applicantId,
-        theme: entry.theme,
-        score: entry.score,
-        rank: entry.rank,
-      }));
-      await trx('strength_scores').insert(scoreRows);
+    const scoreRows = analysis.ranked.map((entry) => ({
+      applicant_id: applicantId,
+      theme: entry.theme,
+      score: entry.score,
+      rank: entry.rank,
+    }));
+    await trx('strength_scores').insert(scoreRows);
 
-      // Step 5: Insert user-chosen role preferences
-      const userPrefs = preferredPositions.map((posId, index) => ({
-        applicant_id: applicantId,
-        position_id: posId,
-        preference_order: index + 1,
-        type: 'user_choice',
-      }));
-      await trx('role_preferences').insert(userPrefs);
+    // Insert user-chosen role preferences
+    const userPrefs = preferredPositions.map((posId, index) => ({
+      applicant_id: applicantId,
+      position_id: posId,
+      preference_order: index + 1,
+      type: 'user_choice',
+    }));
+    await trx('role_preferences').insert(userPrefs);
 
-      // Step 6: Insert system-suggested role preferences
-      const tierPriority = { lead: 0, deputy: 1, associate: 2 };
-      let suggestionOrder = 1;
-      for (const rec of analysis.recommendations.slice(0, 3)) {
-        const bestPosition = rec.positions
-          .slice()
-          .sort((a, b) => (tierPriority[a.tier] ?? 3) - (tierPriority[b.tier] ?? 3))[0];
-        if (bestPosition) {
-          await trx('role_preferences').insert({
-            applicant_id: applicantId,
-            position_id: bestPosition.id,
-            preference_order: suggestionOrder++,
-            type: 'system_suggestion',
-          });
-        }
+    // Insert system-suggested role preferences
+    const tierPriority = { lead: 0, deputy: 1, associate: 2 };
+    let suggestionOrder = 1;
+    for (const rec of analysis.recommendations.slice(0, 3)) {
+      const bestPosition = rec.positions
+        .slice()
+        .sort((a, b) => (tierPriority[a.tier] ?? 3) - (tierPriority[b.tier] ?? 3))[0];
+      if (bestPosition) {
+        await trx('role_preferences').insert({
+          applicant_id: applicantId,
+          position_id: bestPosition.id,
+          preference_order: suggestionOrder++,
+          type: 'system_suggestion',
+        });
       }
-
-      await trx.commit();
-
-      // Resolve position titles for emails
-      const selectedPositionTitles = preferredPositions.map(
-        (id) => DISTRICT_POSITIONS.find((p) => p.id === id)?.title || `Position #${id}`
-      );
-      const recommendationTitles = analysis.recommendations.slice(0, 3).map((rec) => {
-        const tp = { lead: 0, deputy: 1, associate: 2 };
-        const best = rec.positions
-          .slice()
-          .sort((a, b) => (tp[a.tier] ?? 3) - (tp[b.tier] ?? 3))[0];
-        return best ? `${best.title} (${rec.category})` : rec.category;
-      });
-
-      // Send emails in background
-      sendAcknowledgement({
-        applicantEmail: biodata.email,
-        name: biodata.name,
-        applicationNumber,
-        top5: analysis.top5,
-        recommendations: recommendationTitles,
-        selectedPositions: selectedPositionTitles,
-      }).catch((err) => console.error(`[${applicationNumber}] Acknowledgement email failed:`, err.message));
-
-      sendAdminNotification({
-        name: biodata.name,
-        email: biodata.email,
-        phone: biodata.phone,
-        clubName: biodata.clubName,
-        applicationNumber,
-        top5: analysis.top5,
-        recommendations: recommendationTitles,
-        selectedPositions: selectedPositionTitles,
-      }).catch((err) => console.error(`[${applicationNumber}] Admin notification failed:`, err.message));
-
-      return res.status(201).json({
-        message: 'Application submitted successfully',
-        applicantId,
-        applicationNumber,
-        analysis: {
-          top5: analysis.top5,
-          ranked: analysis.ranked,
-          recommendations: analysis.recommendations.map((r) => ({
-            category: r.category,
-            matchScore: r.matchScore,
-            matchedStrengths: r.matchedStrengths,
-          })),
-        },
-      });
-    } catch (err) {
-      await trx.rollback();
-
-      if (err.code === 'ER_DUP_ENTRY') {
-        const msg = err.sqlMessage || '';
-        if (msg.includes('email')) {
-          return res.status(409).json({ error: 'An application with this email already exists' });
-        }
-        // Application number conflict — retry with next number
-        if (msg.includes('application_number') && attempt < MAX_RETRIES) {
-          continue;
-        }
-      }
-
-      return next(err);
     }
-  }
 
-  return res.status(409).json({ error: 'Unable to generate application number. Please try again.' });
+    await trx.commit();
+
+    // Clean up the reservation (outside transaction — if this fails, 24h cleanup handles it)
+    await db('application_reservations').where('email', biodata.email).del()
+      .catch((err) => console.warn(`[${applicationNumber}] Reservation cleanup failed:`, err.message));
+
+    // Resolve position titles for emails
+    const selectedPositionTitles = preferredPositions.map(
+      (id) => DISTRICT_POSITIONS.find((p) => p.id === id)?.title || `Position #${id}`
+    );
+    const recommendationTitles = analysis.recommendations.slice(0, 3).map((rec) => {
+      const tp = { lead: 0, deputy: 1, associate: 2 };
+      const best = rec.positions
+        .slice()
+        .sort((a, b) => (tp[a.tier] ?? 3) - (tp[b.tier] ?? 3))[0];
+      return best ? `${best.title} (${rec.category})` : rec.category;
+    });
+
+    // Send emails in background
+    sendAcknowledgement({
+      applicantEmail: biodata.email,
+      name: biodata.name,
+      applicationNumber,
+      top5: analysis.top5,
+      recommendations: recommendationTitles,
+      selectedPositions: selectedPositionTitles,
+    }).catch((err) => console.error(`[${applicationNumber}] Acknowledgement email failed:`, err.message));
+
+    sendAdminNotification({
+      name: biodata.name,
+      email: biodata.email,
+      phone: biodata.phone,
+      clubName: biodata.clubName,
+      applicationNumber,
+      top5: analysis.top5,
+      recommendations: recommendationTitles,
+      selectedPositions: selectedPositionTitles,
+    }).catch((err) => console.error(`[${applicationNumber}] Admin notification failed:`, err.message));
+
+    return res.status(201).json({
+      message: 'Application submitted successfully',
+      applicantId,
+      applicationNumber,
+      analysis: {
+        top5: analysis.top5,
+        ranked: analysis.ranked,
+        recommendations: analysis.recommendations.map((r) => ({
+          category: r.category,
+          matchScore: r.matchScore,
+          matchedStrengths: r.matchedStrengths,
+        })),
+      },
+    });
+  } catch (err) {
+    await trx.rollback();
+
+    if (err.code === 'ER_DUP_ENTRY') {
+      const msg = err.sqlMessage || '';
+      if (msg.includes('email')) {
+        return res.status(409).json({ error: 'An application with this email already exists' });
+      }
+      if (msg.includes('application_number')) {
+        return res.status(409).json({ error: 'This application number has already been used. Please verify your email again.' });
+      }
+    }
+
+    return next(err);
+  }
 }
 
 async function getQuestions(req, res) {
@@ -204,8 +204,7 @@ async function getQuestions(req, res) {
 
 async function getPositions(req, res) {
   const { DISTRICT_POSITIONS, ROLE_CATEGORIES } = require('../config/constants');
-  const activePositions = DISTRICT_POSITIONS.filter((p) => !p.retired);
-  res.json({ positions: activePositions, categories: ROLE_CATEGORIES });
+  res.json({ positions: DISTRICT_POSITIONS, categories: ROLE_CATEGORIES });
 }
 
 async function getClubs(req, res) {

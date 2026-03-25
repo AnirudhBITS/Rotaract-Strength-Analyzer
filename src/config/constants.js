@@ -64,8 +64,8 @@ const ROLE_STRENGTH_MAP = {
 };
 
 const DISTRICT_POSITIONS = [
-  // Retired (hidden from form, kept for historical lookups)
-  { id: 1, title: 'DRR Special Representative - Membership Development', category: ROLE_CATEGORIES.EXECUTIVE_LEADERSHIP, tier: 'lead', retired: true },
+  // Executive Leadership
+  { id: 1, title: 'DRR Special Representative - Membership Development', category: ROLE_CATEGORIES.EXECUTIVE_LEADERSHIP, tier: 'lead' },
 
   // Administration
   { id: 2, title: 'Associate District Rotaract Secretary', category: ROLE_CATEGORIES.ADMINISTRATION, tier: 'associate' },
