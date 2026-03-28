@@ -46,12 +46,41 @@ async function submitApplication(req, res, next) {
     return res.status(400).json({ error: 'Application number is required. Please verify your email first.' });
   }
 
+  const normalizedEmail = (biodata.email || '').trim().toLowerCase();
+
   // Verify reservation exists and matches
-  const reservation = await db('application_reservations')
-    .where({ email: biodata.email, application_number: applicationNumber })
+  let reservation = await db('application_reservations')
+    .where({ email: normalizedEmail, application_number: applicationNumber })
     .first();
 
+  // Fallback: try lookup by just email (handles case where applicationNumber was regenerated)
   if (!reservation) {
+    reservation = await db('application_reservations')
+      .where('email', normalizedEmail)
+      .first();
+  }
+
+  // Fallback: try lookup by just application_number
+  if (!reservation) {
+    reservation = await db('application_reservations')
+      .where('application_number', applicationNumber)
+      .first();
+  }
+
+  if (!reservation) {
+    // Check if the application was already submitted (client may have missed the success response)
+    const alreadySubmitted = await db('applicants')
+      .where('email', normalizedEmail)
+      .orWhere('application_number', applicationNumber)
+      .first('application_number');
+
+    if (alreadySubmitted) {
+      return res.status(409).json({
+        error: 'Your application has already been submitted successfully. Please check your email for the acknowledgement.',
+        applicationNumber: alreadySubmitted.application_number,
+      });
+    }
+
     return res.status(403).json({
       error: 'Invalid or expired application number. Please verify your email again.',
     });
@@ -63,9 +92,9 @@ async function submitApplication(req, res, next) {
 
     // Insert applicant biodata
     const [applicantId] = await trx('applicants').insert({
-      application_number: applicationNumber,
+      application_number: reservation.application_number,
       name: biodata.name,
-      email: biodata.email,
+      email: normalizedEmail,
       phone: biodata.phone,
       secondary_phone: biodata.secondaryPhone || null,
       club_name: biodata.clubName,
@@ -129,9 +158,11 @@ async function submitApplication(req, res, next) {
 
     await trx.commit();
 
-    // Clean up the reservation (outside transaction — if this fails, 24h cleanup handles it)
-    await db('application_reservations').where('email', biodata.email).del()
-      .catch((err) => console.warn(`[${applicationNumber}] Reservation cleanup failed:`, err.message));
+    // Delay reservation cleanup by 5 minutes so client retries still find it
+    setTimeout(() => {
+      db('application_reservations').where('id', reservation.id).del()
+        .catch((err) => console.warn(`[${reservation.application_number}] Reservation cleanup failed:`, err.message));
+    }, 300_000);
 
     // Resolve position titles for emails
     const selectedPositionTitles = preferredPositions.map(
@@ -214,14 +245,15 @@ async function getClubs(req, res) {
 async function checkDuplicate(req, res, next) {
   try {
     const { email, phone } = req.body;
+    const normalizedEmail = (email || '').trim().toLowerCase();
 
     const existing = await db('applicants')
-      .where('email', email)
+      .where('email', normalizedEmail)
       .orWhere('phone', phone)
       .first();
 
     if (existing) {
-      const field = existing.email === email ? 'email' : 'phone number';
+      const field = existing.email === normalizedEmail ? 'email' : 'phone number';
       return res.status(409).json({
         duplicate: true,
         field,
@@ -242,8 +274,9 @@ async function sendOTP(req, res) {
       return res.status(400).json({ error: 'Email is required' });
     }
 
-    const otp = setOTP(email);
-    await sendOTPEmail(email, otp);
+    const normalizedEmail = email.trim().toLowerCase();
+    const otp = setOTP(normalizedEmail);
+    await sendOTPEmail(normalizedEmail, otp);
 
     res.json({ message: 'OTP sent successfully' });
   } catch (err) {
@@ -258,14 +291,16 @@ async function verifyOTPHandler(req, res, next) {
     return res.status(400).json({ error: 'Email and OTP are required' });
   }
 
-  const result = verifyOTP(email, otp);
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const result = verifyOTP(normalizedEmail, otp);
   if (!result.valid) {
     return res.status(400).json({ error: result.message });
   }
 
   try {
     // Check if email already has a submitted application
-    const existing = await db('applicants').where('email', email).first('application_number');
+    const existing = await db('applicants').where('email', normalizedEmail).first('application_number');
     if (existing) {
       return res.status(409).json({
         error: 'An application with this email has already been submitted',
@@ -274,14 +309,14 @@ async function verifyOTPHandler(req, res, next) {
     }
 
     // Check if a reservation already exists (user resuming)
-    const existingReservation = await db('application_reservations').where('email', email).first();
+    const existingReservation = await db('application_reservations').where('email', normalizedEmail).first();
     if (existingReservation) {
       return res.json({ verified: true, applicationNumber: existingReservation.application_number });
     }
 
-    // Lazy cleanup: delete expired reservations (older than 24 hours)
+    // Lazy cleanup: delete expired reservations (older than 7 days)
     await db('application_reservations')
-      .where('created_at', '<', db.raw("NOW() - INTERVAL 24 HOUR"))
+      .where('created_at', '<', db.raw("NOW() - INTERVAL 7 DAY"))
       .del();
 
     // Generate application number and create reservation
@@ -290,13 +325,13 @@ async function verifyOTPHandler(req, res, next) {
 
     try {
       await db('application_reservations').insert({
-        email,
+        email: normalizedEmail,
         application_number: applicationNumber,
       });
     } catch (err) {
       // Race condition: another request reserved for this email simultaneously
       if (err.code === 'ER_DUP_ENTRY') {
-        const race = await db('application_reservations').where('email', email).first();
+        const race = await db('application_reservations').where('email', normalizedEmail).first();
         if (race) {
           return res.json({ verified: true, applicationNumber: race.application_number });
         }
