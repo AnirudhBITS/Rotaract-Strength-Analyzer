@@ -58,7 +58,7 @@ async function getApplicants(req, res, next) {
     }
 
     const applicants = await baseQuery
-      .select('*')
+      .select('id', 'application_number', 'name', 'email', 'phone', 'club_name', 'rotary_id', 'age', 'date_of_birth', 'profession', 'blood_group', 'willing_to_donate', 'status', 'admin_notes', 'created_at', 'updated_at')
       .orderBy(sortBy, sortOrder);
 
     res.json({ applicants });

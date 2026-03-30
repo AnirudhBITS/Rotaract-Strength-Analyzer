@@ -180,11 +180,21 @@ export default function BiodataStep({ data, onChange, errors, clubs = [], onSect
   const [celebration, setCelebration] = useState(null)
   const [celebrated, setCelebrated] = useState(new Set(draft?.celebrated || []))
   const [otpSent, setOtpSent] = useState(false)
-  const [otpVerified, setOtpVerified] = useState(draft?.otpVerified && data.email ? true : false)
+  const [otpVerified, setOtpVerified] = useState(draft?.otpVerified && (data.email || draft?.email) ? true : false)
   const [otpValue, setOtpValue] = useState('')
   const [otpSending, setOtpSending] = useState(false)
   const [otpVerifying, setOtpVerifying] = useState(false)
   const [otpCooldown, setOtpCooldown] = useState(0)
+
+  // Restore applicationNumber and email from draft on mount (survives page reloads)
+  useEffect(() => {
+    if (draft?.otpVerified && draft?.applicationNumber && !data.applicationNumber) {
+      const restored = { ...data }
+      if (draft.applicationNumber) restored.applicationNumber = draft.applicationNumber
+      if (draft.email && !data.email) restored.email = draft.email
+      onChange(restored)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const current = SECTIONS[section]
   const isLast = section >= SECTIONS.length - 1
@@ -194,10 +204,10 @@ export default function BiodataStep({ data, onChange, errors, clubs = [], onSect
     if (onSectionChange) onSectionChange(section, SECTIONS.length)
   }, [section])
 
-  // Persist state
+  // Persist state (include applicationNumber + email so they survive page reloads)
   useEffect(() => {
-    saveDraft({ section, otpVerified, celebrated: [...celebrated] })
-  }, [section, otpVerified, celebrated])
+    saveDraft({ section, otpVerified, celebrated: [...celebrated], applicationNumber: data.applicationNumber, email: data.email })
+  }, [section, otpVerified, celebrated, data.applicationNumber, data.email])
 
   const update = (field) => (e) => {
     onChange({ ...data, [field]: e.target.type === 'checkbox' ? e.target.checked : e.target.value })

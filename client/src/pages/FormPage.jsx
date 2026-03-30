@@ -33,6 +33,15 @@ function clearDraft() {
 
 export default function FormPage() {
   const navigate = useNavigate()
+
+  useEffect(() => {
+    toast('Thanks for your interest, but we have closed applications now.', { icon: '🚫', duration: 5000 })
+    navigate('/', { replace: true })
+  }, [])
+
+  return null
+
+  // --- Applications closed: code below is inactive ---
   const draft = loadDraft()
 
   const [step, setStep] = useState(draft?.step || 1)
