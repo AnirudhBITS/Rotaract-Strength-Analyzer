@@ -70,6 +70,7 @@ export const allocationApi = {
   allocate: (positionId, data) => request('POST', '/allocation/positions/' + positionId + '/allocate', data),
   deallocate: (positionId, applicantId) => request('DELETE', '/allocation/positions/' + positionId + '/deallocate/' + applicantId),
   searchApplicants: (q) => request('GET', '/allocation/search-applicants?q=' + encodeURIComponent(q)),
+  exportPositionCandidates: (positionId) => request('GET', '/allocation/positions/' + positionId + '/export', null, { responseType: 'arraybuffer' }),
   getUnallocated: () => request('GET', '/allocation/unallocated-applicants'),
   getAllAllocations: () => request('GET', '/allocation/all-allocations'),
   confirmAllocation: (allocationId) => request('POST', '/allocation/confirm/' + allocationId),

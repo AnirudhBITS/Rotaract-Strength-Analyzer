@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 import {
   HiOutlineArrowLeft, HiOutlineCheckCircle, HiOutlineXMark,
   HiOutlineUserPlus, HiOutlineExclamationTriangle, HiOutlineStar,
-  HiOutlineMagnifyingGlass,
+  HiOutlineMagnifyingGlass, HiOutlineArrowDownTray,
 } from 'react-icons/hi2'
 import { allocationApi, getFileUrl } from '../api/client'
 
@@ -93,6 +93,22 @@ export default function PositionDetail() {
     }
   }
 
+  const handleExportCandidates = async () => {
+    try {
+      const response = await allocationApi.exportPositionCandidates(positionId)
+      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${data.position.title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-candidates.xlsx`
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success('Export downloaded')
+    } catch (e) {
+      toast.error('Export failed')
+    }
+  }
+
   const handleSearch = async (q) => {
     setSearchQuery(q)
     if (q.length < 2) { setSearchResults([]); return }
@@ -128,11 +144,20 @@ export default function PositionDetail() {
               <p className="text-xs text-navy-500">{position.category} &middot; {position.tier}</p>
             </div>
           </div>
-          {currentAllocations.length > 0 && (
-            <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
-              {currentAllocations.length} Allocated
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleExportCandidates}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-navy-700 bg-white border border-border-subtle rounded-xl hover:bg-navy-50 transition-colors"
+            >
+              <HiOutlineArrowDownTray className="w-4 h-4" />
+              Export
+            </button>
+            {currentAllocations.length > 0 && (
+              <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
+                {currentAllocations.length} Allocated
+              </span>
+            )}
+          </div>
         </div>
       </header>
 

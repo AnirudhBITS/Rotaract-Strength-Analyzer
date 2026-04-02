@@ -15,6 +15,7 @@ const {
   removeConfirmation,
   getFinalisedOfficials,
   exportFinalisedOfficials,
+  exportPositionCandidates,
 } = require('../controllers/allocationController');
 
 const router = express.Router();
@@ -24,6 +25,7 @@ router.use(authenticate);
 router.get('/positions', getPositions);
 router.get('/summary', getAllocationSummary);
 router.get('/positions/:positionId/candidates', getPositionCandidates);
+router.get('/positions/:positionId/export', exportPositionCandidates);
 router.get('/search-applicants', searchApplicants);
 router.get('/unallocated-applicants', getUnallocatedApplicants);
 router.get('/all-allocations', getAllAllocations);

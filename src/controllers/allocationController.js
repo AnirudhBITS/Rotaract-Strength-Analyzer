@@ -547,6 +547,83 @@ async function exportFinalisedOfficials(req, res, next) {
   }
 }
 
+async function exportPositionCandidates(req, res, next) {
+  try {
+    const { positionId } = req.params;
+    const position = DISTRICT_POSITIONS.find((p) => p.id === parseInt(positionId, 10));
+
+    if (!position) {
+      return res.status(404).json({ error: 'Position not found' });
+    }
+
+    // Get all applicants who chose this position (user_choice)
+    const candidates = await db('role_preferences')
+      .select(
+        'applicants.id', 'applicants.name', 'applicants.club_name',
+        'applicants.phone', 'applicants.email', 'applicants.rotary_id',
+        'applicants.past_positions',
+        'role_preferences.preference_order'
+      )
+      .leftJoin('applicants', 'role_preferences.applicant_id', 'applicants.id')
+      .where('role_preferences.position_id', positionId)
+      .where('role_preferences.type', 'user_choice')
+      .orderBy('role_preferences.preference_order', 'asc');
+
+    // Get all 3 preferred positions for each candidate
+    const candidateIds = candidates.map((c) => c.id);
+    const allPrefs = await db('role_preferences')
+      .select('applicant_id', 'position_id', 'preference_order')
+      .whereIn('applicant_id', candidateIds)
+      .where('type', 'user_choice')
+      .orderBy('preference_order', 'asc');
+
+    const prefsMap = {};
+    for (const p of allPrefs) {
+      if (!prefsMap[p.applicant_id]) prefsMap[p.applicant_id] = {};
+      const pos = DISTRICT_POSITIONS.find((dp) => dp.id === p.position_id);
+      prefsMap[p.applicant_id][p.preference_order] = pos?.title || `Position #${p.position_id}`;
+    }
+
+    const rows = candidates.map((c) => {
+      const prefs = prefsMap[c.id] || {};
+      return {
+        'Name': c.name,
+        'Club': c.club_name,
+        'Phone': c.phone,
+        'Email': c.email,
+        'Rotary ID': c.rotary_id || '',
+        'Preferred Position 1': prefs[1] || '',
+        'Preferred Position 2': prefs[2] || '',
+        'Preferred Position 3': prefs[3] || '',
+        'Past Positions': c.past_positions || '',
+      };
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(rows.length > 0 ? rows : [{ 'No candidates found': '' }]);
+
+    if (rows.length > 0) {
+      const colWidths = Object.keys(rows[0]).map((key) => {
+        const maxLen = Math.max(key.length, ...rows.map((r) => String(r[key] || '').length));
+        return { wch: Math.min(maxLen + 2, 40) };
+      });
+      ws['!cols'] = colWidths;
+    }
+
+    const safeTitle = position.title.replace(/[^a-zA-Z0-9 ]/g, '').substring(0, 31);
+    XLSX.utils.book_append_sheet(wb, ws, safeTitle);
+
+    const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const filename = position.title.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}-candidates.xlsx`);
+    res.send(buffer);
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   getPositions,
   getPositionCandidates,
@@ -560,4 +637,5 @@ module.exports = {
   removeConfirmation,
   getFinalisedOfficials,
   exportFinalisedOfficials,
+  exportPositionCandidates,
 };
