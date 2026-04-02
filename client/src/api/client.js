@@ -72,6 +72,7 @@ export const allocationApi = {
   searchApplicants: (q) => request('GET', '/allocation/search-applicants?q=' + encodeURIComponent(q)),
   exportPositionCandidates: (positionId) => request('GET', '/allocation/positions/' + positionId + '/export', null, { responseType: 'arraybuffer' }),
   scheduleMeeting: (data) => request('POST', '/allocation/schedule-meeting', data),
+  getScheduledMeetings: (params) => request('GET', '/allocation/scheduled-meetings' + buildQuery(params)),
   getUnallocated: () => request('GET', '/allocation/unallocated-applicants'),
   getAllAllocations: () => request('GET', '/allocation/all-allocations'),
   confirmAllocation: (allocationId) => request('POST', '/allocation/confirm/' + allocationId),

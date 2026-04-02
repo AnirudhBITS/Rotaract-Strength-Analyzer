@@ -17,6 +17,7 @@ const {
   exportFinalisedOfficials,
   exportPositionCandidates,
   scheduleMeeting,
+  getScheduledMeetings,
 } = require('../controllers/allocationController');
 
 const router = express.Router();
@@ -30,6 +31,7 @@ router.get('/positions/:positionId/export', exportPositionCandidates);
 router.get('/search-applicants', searchApplicants);
 router.get('/unallocated-applicants', getUnallocatedApplicants);
 router.get('/all-allocations', getAllAllocations);
+router.get('/scheduled-meetings', getScheduledMeetings);
 router.get('/finalised', getFinalisedOfficials);
 router.get('/finalised/export', exportFinalisedOfficials);
 

@@ -627,7 +627,7 @@ async function exportPositionCandidates(req, res, next) {
 
 async function scheduleMeeting(req, res, next) {
   try {
-    const { applicantId, date, time, meetLink } = req.body;
+    const { applicantId, positionId, date, time, meetLink } = req.body;
 
     const applicant = await db('applicants').where({ id: applicantId }).first();
     if (!applicant) {
@@ -642,11 +642,45 @@ async function scheduleMeeting(req, res, next) {
       meetLink,
     });
 
-    if (result.success) {
-      res.json({ message: `Meeting schedule sent to ${applicant.name} (${applicant.email})` });
-    } else {
-      res.status(500).json({ error: result.error || 'Failed to send email' });
+    if (!result.success) {
+      return res.status(500).json({ error: result.error || 'Failed to send email' });
     }
+
+    // Save to database
+    await db('scheduled_meetings').insert({
+      applicant_id: applicantId,
+      position_id: positionId || null,
+      date,
+      time,
+      meet_link: meetLink,
+      scheduled_by: req.admin.id,
+    });
+
+    res.json({ message: `Meeting schedule sent to ${applicant.name} (${applicant.email})` });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function getScheduledMeetings(req, res, next) {
+  try {
+    const { positionId } = req.query;
+
+    let query = db('scheduled_meetings')
+      .select(
+        'scheduled_meetings.*',
+        'applicants.name', 'applicants.email', 'applicants.phone',
+        'applicants.club_name'
+      )
+      .leftJoin('applicants', 'scheduled_meetings.applicant_id', 'applicants.id')
+      .orderBy('scheduled_meetings.created_at', 'desc');
+
+    if (positionId) {
+      query = query.where('scheduled_meetings.position_id', positionId);
+    }
+
+    const meetings = await query;
+    res.json({ meetings });
   } catch (err) {
     next(err);
   }
@@ -667,4 +701,5 @@ module.exports = {
   exportFinalisedOfficials,
   exportPositionCandidates,
   scheduleMeeting,
+  getScheduledMeetings,
 };

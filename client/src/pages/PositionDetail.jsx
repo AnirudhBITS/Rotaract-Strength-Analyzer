@@ -46,6 +46,7 @@ export default function PositionDetail() {
   const [showScheduleModal, setShowScheduleModal] = useState(false)
   const [scheduleForm, setScheduleForm] = useState({ applicantId: '', date: '', time: '', meetLink: '' })
   const [scheduling, setScheduling] = useState(false)
+  const [scheduledMap, setScheduledMap] = useState({})
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token')
@@ -55,12 +56,18 @@ export default function PositionDetail() {
 
   async function fetchData() {
     try {
-      const [candidatesRes, unallocRes] = await Promise.all([
+      const [candidatesRes, unallocRes, meetingsRes] = await Promise.all([
         allocationApi.getCandidates(positionId),
         allocationApi.getUnallocated(),
+        allocationApi.getScheduledMeetings({ positionId }),
       ])
       setData(candidatesRes.data)
       setUnallocated(unallocRes.data.applicants)
+      const map = {}
+      for (const m of meetingsRes.data.meetings) {
+        map[m.applicant_id] = { date: m.date, time: m.time, meetLink: m.meet_link }
+      }
+      setScheduledMap(map)
     } catch (e) {
       toast.error('Failed to load position details')
       navigate('/admin/positions')
@@ -106,6 +113,7 @@ export default function PositionDetail() {
     try {
       const res = await allocationApi.scheduleMeeting({
         applicantId: parseInt(scheduleForm.applicantId, 10),
+        positionId: parseInt(positionId, 10),
         date: scheduleForm.date,
         time: scheduleForm.time,
         meetLink: scheduleForm.meetLink,
@@ -113,6 +121,7 @@ export default function PositionDetail() {
       toast.success(res.data.message)
       setShowScheduleModal(false)
       setScheduleForm({ applicantId: '', date: '', time: '', meetLink: '' })
+      fetchData()
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to send meeting schedule')
     } finally {
@@ -229,6 +238,22 @@ export default function PositionDetail() {
           </motion.div>
         )}
 
+        {/* Schedule Summary */}
+        {userChoices.length > 0 && (
+          <div className="flex items-center gap-4 mb-6 p-4 bg-white rounded-2xl border border-border-subtle">
+            <HiOutlineCalendarDays className="w-5 h-5 text-navy-500" />
+            <div className="flex items-center gap-4 text-sm">
+              <span className="font-semibold text-navy-700">Interview Schedule:</span>
+              <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">
+                {userChoices.filter((c) => scheduledMap[c.id]).length} Scheduled
+              </span>
+              <span className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">
+                {userChoices.filter((c) => !scheduledMap[c.id]).length} Pending
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Applicants Who Chose This Position */}
         <section className="mb-10">
           <div className="flex items-center gap-2 mb-4">
@@ -251,6 +276,7 @@ export default function PositionDetail() {
                   onAllocate={handleAllocate}
                   allocating={allocating}
                   allocatedIds={allocatedIds}
+                  scheduled={scheduledMap[candidate.id]}
                 />
               ))}
             </div>
@@ -280,6 +306,7 @@ export default function PositionDetail() {
                   allocating={allocating}
                   allocatedIds={allocatedIds}
                   isSystemSuggestion
+                  scheduled={scheduledMap[candidate.id]}
                 />
               ))}
             </div>
@@ -466,7 +493,7 @@ export default function PositionDetail() {
   )
 }
 
-function CandidateCard({ candidate, preferenceLabel, onAllocate, allocating, allocatedIds = [], isSystemSuggestion }) {
+function CandidateCard({ candidate, preferenceLabel, onAllocate, allocating, allocatedIds = [], isSystemSuggestion, scheduled }) {
   const isAllocatedHere = allocatedIds.includes(candidate.id)
   const isAllocatedElsewhere = candidate.allocated_to !== null && !isAllocatedHere
 
@@ -502,6 +529,16 @@ function CandidateCard({ candidate, preferenceLabel, onAllocate, allocating, all
               }`}>
                 {preferenceLabel}
               </span>
+              {scheduled ? (
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 flex items-center gap-1">
+                  <HiOutlineCalendarDays className="w-3 h-3" />
+                  {scheduled.date} at {scheduled.time}
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                  Not Scheduled
+                </span>
+              )}
               {isAllocatedElsewhere && (
                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 flex items-center gap-1">
                   <HiOutlineExclamationTriangle className="w-3 h-3" />
