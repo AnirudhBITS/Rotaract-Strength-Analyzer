@@ -7,6 +7,7 @@ import {
   HiOutlineStar, HiOutlineXCircle, HiOutlineMagnifyingGlass,
   HiOutlineFunnel, HiOutlineArrowDownTray, HiOutlineArrowRightOnRectangle,
   HiOutlineSquares2X2, HiOutlineClipboardDocumentCheck, HiOutlineShieldCheck,
+  HiOutlineEnvelope,
 } from 'react-icons/hi2'
 import { adminApi } from '../api/client'
 
@@ -33,6 +34,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [sendingEmail, setSendingEmail] = useState(false)
 
   const adminInfo = JSON.parse(localStorage.getItem('admin_info') || '{}')
 
@@ -73,6 +75,19 @@ export default function AdminDashboard() {
       toast.success('Export downloaded')
     } catch (e) {
       toast.error('Export failed')
+    }
+  }
+
+  const handleSendBulkEmail = async () => {
+    if (!window.confirm('Send interview notification email to ALL applicants? This cannot be undone.')) return
+    setSendingEmail(true)
+    try {
+      const res = await adminApi.sendBulkEmail()
+      toast.success(`Emails sent: ${res.data.sent}/${res.data.total}${res.data.failed ? `, ${res.data.failed} failed` : ''}`)
+    } catch (e) {
+      toast.error('Failed to send bulk email')
+    } finally {
+      setSendingEmail(false)
     }
   }
 
@@ -129,6 +144,14 @@ export default function AdminDashboard() {
             >
               <HiOutlineArrowDownTray className="w-4 h-4" />
               Export
+            </button>
+            <button
+              onClick={handleSendBulkEmail}
+              disabled={sendingEmail}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-pink-600 rounded-xl hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <HiOutlineEnvelope className="w-4 h-4" />
+              {sendingEmail ? 'Sending...' : 'Send Bulk Email'}
             </button>
             <button
               onClick={handleLogout}

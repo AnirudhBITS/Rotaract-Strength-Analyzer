@@ -60,6 +60,7 @@ export const adminApi = {
   updateStatus: (id, data) => request('PATCH', '/admin/applicants/' + id + '/status', data),
   exportAll: () => request('GET', '/admin/export', null, { responseType: 'arraybuffer' }),
   deleteApplicant: (id) => request('DELETE', '/admin/applicants/' + id),
+  sendBulkEmail: () => request('POST', '/admin/send-bulk-email'),
 };
 
 export const allocationApi = {
