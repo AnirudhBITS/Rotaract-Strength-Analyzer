@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 import {
   HiOutlineArrowLeft, HiOutlineCheckCircle, HiOutlineXMark,
   HiOutlineUserPlus, HiOutlineExclamationTriangle, HiOutlineStar,
-  HiOutlineMagnifyingGlass, HiOutlineArrowDownTray,
+  HiOutlineMagnifyingGlass, HiOutlineArrowDownTray, HiOutlineCalendarDays,
 } from 'react-icons/hi2'
 import { allocationApi, getFileUrl } from '../api/client'
 
@@ -43,6 +43,9 @@ export default function PositionDetail() {
   const [unallocated, setUnallocated] = useState([])
   const [loadingUnallocated, setLoadingUnallocated] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showScheduleModal, setShowScheduleModal] = useState(false)
+  const [scheduleForm, setScheduleForm] = useState({ applicantId: '', date: '', time: '', meetLink: '' })
+  const [scheduling, setScheduling] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token')
@@ -90,6 +93,30 @@ export default function PositionDetail() {
       fetchData()
     } catch (e) {
       toast.error('Failed to remove allocation')
+    }
+  }
+
+  const handleScheduleMeeting = async (e) => {
+    e.preventDefault()
+    if (!scheduleForm.applicantId || !scheduleForm.date || !scheduleForm.time || !scheduleForm.meetLink) {
+      toast.error('Please fill all fields')
+      return
+    }
+    setScheduling(true)
+    try {
+      const res = await allocationApi.scheduleMeeting({
+        applicantId: parseInt(scheduleForm.applicantId, 10),
+        date: scheduleForm.date,
+        time: scheduleForm.time,
+        meetLink: scheduleForm.meetLink,
+      })
+      toast.success(res.data.message)
+      setShowScheduleModal(false)
+      setScheduleForm({ applicantId: '', date: '', time: '', meetLink: '' })
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to send meeting schedule')
+    } finally {
+      setScheduling(false)
     }
   }
 
@@ -145,6 +172,13 @@ export default function PositionDetail() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowScheduleModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-pink-600 rounded-xl hover:bg-pink-700 transition-colors"
+            >
+              <HiOutlineCalendarDays className="w-4 h-4" />
+              Schedule Meet
+            </button>
             <button
               onClick={handleExportCandidates}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-navy-700 bg-white border border-border-subtle rounded-xl hover:bg-navy-50 transition-colors"
@@ -346,6 +380,88 @@ export default function PositionDetail() {
             )}
           </section>
       </main>
+
+      {/* Schedule Meeting Modal */}
+      {showScheduleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setShowScheduleModal(false)}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-navy-900">Schedule Meeting</h3>
+              <button onClick={() => setShowScheduleModal(false)} className="text-navy-400 hover:text-navy-600">
+                <HiOutlineXMark className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleScheduleMeeting} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-navy-700 mb-1.5">Candidate</label>
+                <select
+                  value={scheduleForm.applicantId}
+                  onChange={(e) => setScheduleForm({ ...scheduleForm, applicantId: e.target.value })}
+                  className="w-full px-4 py-3 text-sm text-navy-900 bg-white border border-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                  required
+                >
+                  <option value="">Select a candidate...</option>
+                  {userChoices.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name} — {c.club_name}</option>
+                  ))}
+                  {systemSuggestions.filter((s) => !userChoices.some((u) => u.id === s.id)).map((c) => (
+                    <option key={c.id} value={c.id}>{c.name} — {c.club_name} (Suggested)</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-semibold text-navy-700 mb-1.5">Date</label>
+                  <input
+                    type="date"
+                    value={scheduleForm.date}
+                    onChange={(e) => setScheduleForm({ ...scheduleForm, date: e.target.value })}
+                    className="w-full px-4 py-3 text-sm text-navy-900 bg-white border border-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-navy-700 mb-1.5">Time</label>
+                  <input
+                    type="time"
+                    value={scheduleForm.time}
+                    onChange={(e) => setScheduleForm({ ...scheduleForm, time: e.target.value })}
+                    className="w-full px-4 py-3 text-sm text-navy-900 bg-white border border-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-navy-700 mb-1.5">Meeting Link</label>
+                <input
+                  type="url"
+                  value={scheduleForm.meetLink}
+                  onChange={(e) => setScheduleForm({ ...scheduleForm, meetLink: e.target.value })}
+                  placeholder="https://meet.google.com/..."
+                  className="w-full px-4 py-3 text-sm text-navy-900 bg-white border border-border-subtle rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 placeholder:text-navy-400"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={scheduling}
+                className="w-full py-3 text-sm font-semibold text-white bg-pink-600 rounded-xl hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {scheduling ? 'Sending...' : 'Send Meeting Invite'}
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }

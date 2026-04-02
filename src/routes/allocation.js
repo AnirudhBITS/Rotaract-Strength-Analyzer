@@ -16,6 +16,7 @@ const {
   getFinalisedOfficials,
   exportFinalisedOfficials,
   exportPositionCandidates,
+  scheduleMeeting,
 } = require('../controllers/allocationController');
 
 const router = express.Router();
@@ -58,6 +59,19 @@ router.delete(
   '/confirm/:allocationId',
   authorize('super_admin', 'admin'),
   removeConfirmation
+);
+
+router.post(
+  '/schedule-meeting',
+  authorize('super_admin', 'admin'),
+  [
+    body('applicantId').isInt({ min: 1 }).withMessage('Valid applicant ID is required'),
+    body('date').trim().notEmpty().withMessage('Date is required'),
+    body('time').trim().notEmpty().withMessage('Time is required'),
+    body('meetLink').trim().isURL().withMessage('Valid meeting link is required'),
+  ],
+  validate,
+  scheduleMeeting
 );
 
 module.exports = router;

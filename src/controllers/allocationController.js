@@ -1,6 +1,7 @@
 const db = require('../config/database');
 const XLSX = require('xlsx');
 const { DISTRICT_POSITIONS } = require('../config/constants');
+const { sendMeetingSchedule } = require('../utils/mailer');
 
 /**
  * Get all positions with their allocation status and interest counts
@@ -624,6 +625,33 @@ async function exportPositionCandidates(req, res, next) {
   }
 }
 
+async function scheduleMeeting(req, res, next) {
+  try {
+    const { applicantId, date, time, meetLink } = req.body;
+
+    const applicant = await db('applicants').where({ id: applicantId }).first();
+    if (!applicant) {
+      return res.status(404).json({ error: 'Applicant not found' });
+    }
+
+    const result = await sendMeetingSchedule({
+      email: applicant.email,
+      name: applicant.name,
+      date,
+      time,
+      meetLink,
+    });
+
+    if (result.success) {
+      res.json({ message: `Meeting schedule sent to ${applicant.name} (${applicant.email})` });
+    } else {
+      res.status(500).json({ error: result.error || 'Failed to send email' });
+    }
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   getPositions,
   getPositionCandidates,
@@ -638,4 +666,5 @@ module.exports = {
   getFinalisedOfficials,
   exportFinalisedOfficials,
   exportPositionCandidates,
+  scheduleMeeting,
 };
