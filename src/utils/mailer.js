@@ -239,4 +239,103 @@ async function sendOTPEmail(email, otp) {
   }
 }
 
-module.exports = { sendAcknowledgement, sendAdminNotification, sendOTPEmail };
+function buildInterviewNotificationHtml(name) {
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f5f5fa;font-family:'Segoe UI',system-ui,sans-serif">
+  <div style="max-width:600px;margin:0 auto;background:#ffffff">
+    <!-- Header banner -->
+    <img src="${process.env.CLIENT_URL || 'https://rotaract3234strengthanalyser.blackitechs.org'}/hero-laptop.png" alt="Rotaract District 3234" style="width:100%;height:auto;display:block" />
+
+    <div style="padding:32px 28px 24px">
+      <h1 style="margin:0 0 4px;font-size:22px;color:#1e1e30;text-align:center">Rotaract 3234 DO Screening</h1>
+      <p style="margin:0 0 24px;font-size:13px;color:#8587b3;text-align:center">District Officials Recruitment — Interview Notification</p>
+
+      <p style="font-size:15px;color:#34344b;line-height:1.7">Dear <strong>${name}</strong>,</p>
+
+      <p style="font-size:14px;color:#34344b;line-height:1.7">
+        Thank you for your application. We appreciate your interest in joining UNITE team.
+      </p>
+
+      <p style="font-size:14px;color:#34344b;line-height:1.7">
+        We are pleased to inform you that your screening interview has been scheduled between <strong style="color:#e71e6d">April 3rd</strong> and <strong style="color:#e71e6d">April 7th</strong>. Our team will reach out to you shortly with the exact date and time.
+      </p>
+
+      <h2 style="font-size:14px;color:#1e1e30;border-bottom:2px solid #e8e9f0;padding-bottom:6px;margin:24px 0 12px">Interview Instructions</h2>
+
+      <table style="width:100%;border-collapse:collapse;font-size:14px;color:#34344b">
+        <tr>
+          <td style="padding:8px 12px;font-weight:600;color:#e71e6d;vertical-align:top;width:24px">1</td>
+          <td style="padding:8px 12px">Your camera must be switched on throughout the interview.</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:600;color:#e71e6d;vertical-align:top">2</td>
+          <td style="padding:8px 12px">Please ensure you are dressed neatly and professionally.</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:600;color:#e71e6d;vertical-align:top">3</td>
+          <td style="padding:8px 12px">Make sure your lighting is adequate so that you are clearly visible.</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:600;color:#e71e6d;vertical-align:top">4</td>
+          <td style="padding:8px 12px">Choose a quiet, distraction-free environment.</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:600;color:#e71e6d;vertical-align:top">5</td>
+          <td style="padding:8px 12px">Ensure a stable internet connection to avoid interruptions.</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px;font-weight:600;color:#e71e6d;vertical-align:top">6</td>
+          <td style="padding:8px 12px">Please join the interview at the said time. Don't be late.</td>
+        </tr>
+      </table>
+
+      <p style="font-size:14px;color:#34344b;line-height:1.7;margin-top:24px">
+        Looking forward!
+      </p>
+
+      <p style="font-size:14px;color:#34344b;line-height:1.7;margin-top:8px">
+        Regards,<br>
+        <strong style="color:#1e1e30">Unite Secretarial Team</strong>
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="height:4px;background:linear-gradient(to right,#42b8e9,#e71e6d,#ffc829,#f97316)"></div>
+    <div style="background:#1e1e30;padding:16px 28px;text-align:center">
+      <p style="margin:0 0 6px;font-size:12px;color:rgba(255,255,255,0.5)">
+        Let's <span style="color:#e71e6d;font-weight:700">Unite</span> Together &middot; Rotaract District 3234 &middot; 2026-27
+      </p>
+      <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.35)">
+        Made with &#128153; by Secretarial Team 26-27
+      </p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+async function sendInterviewNotification(email, name) {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn('SMTP not configured — skipping email');
+    return { success: false, error: 'SMTP not configured' };
+  }
+
+  try {
+    await transporter.sendMail({
+      from: SENDER,
+      to: email,
+      subject: 'Screening Interview Scheduled | Rotaract District 3234',
+      html: buildInterviewNotificationHtml(name),
+    });
+    console.log(`Interview notification sent to ${email}`);
+    return { success: true };
+  } catch (err) {
+    console.error(`Failed to send to ${email}:`, err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+module.exports = { sendAcknowledgement, sendAdminNotification, sendOTPEmail, sendInterviewNotification };

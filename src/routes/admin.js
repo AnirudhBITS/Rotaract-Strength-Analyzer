@@ -10,6 +10,7 @@ const {
   getDashboardStats,
   exportApplicants,
   deleteApplicant,
+  sendBulkEmail,
 } = require('../controllers/adminController');
 
 const router = express.Router();
@@ -44,5 +45,7 @@ router.patch(
 router.get('/export', authenticate, authorize('super_admin', 'admin'), exportApplicants);
 
 router.delete('/applicants/:id', authenticate, authorize('super_admin'), deleteApplicant);
+
+router.post('/send-bulk-email', authenticate, authorize('super_admin', 'admin'), sendBulkEmail);
 
 module.exports = router;

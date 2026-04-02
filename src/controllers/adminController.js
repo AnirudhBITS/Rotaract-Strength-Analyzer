@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const XLSX = require('xlsx');
 const { DISTRICT_POSITIONS } = require('../config/constants');
+const { sendInterviewNotification } = require('../utils/mailer');
 
 async function login(req, res, next) {
   try {
@@ -289,6 +290,35 @@ async function deleteApplicant(req, res, next) {
   }
 }
 
+async function sendBulkEmail(req, res, next) {
+  try {
+    const applicants = await db('applicants').select('name', 'email');
+
+    if (applicants.length === 0) {
+      return res.json({ message: 'No applicants found', sent: 0, failed: 0 });
+    }
+
+    let sent = 0;
+    let failed = 0;
+    const errors = [];
+
+    for (const applicant of applicants) {
+      const result = await sendInterviewNotification(applicant.email, applicant.name);
+      if (result.success) {
+        sent++;
+      } else {
+        failed++;
+        errors.push({ email: applicant.email, error: result.error });
+      }
+    }
+
+    console.log(`Bulk email complete: ${sent} sent, ${failed} failed out of ${applicants.length}`);
+    res.json({ message: 'Bulk email complete', total: applicants.length, sent, failed, errors });
+  } catch (err) {
+    next(err);
+  }
+}
+
 module.exports = {
   login,
   getApplicants,
@@ -297,4 +327,5 @@ module.exports = {
   getDashboardStats,
   exportApplicants,
   deleteApplicant,
+  sendBulkEmail,
 };
