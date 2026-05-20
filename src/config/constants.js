@@ -64,15 +64,9 @@ const ROLE_STRENGTH_MAP = {
 };
 
 const DISTRICT_POSITIONS = [
-  // Executive Leadership
-  { id: 1, title: 'DRR Special Representative - Membership Development', category: ROLE_CATEGORIES.EXECUTIVE_LEADERSHIP, tier: 'lead' },
-
   // Administration
   { id: 2, title: 'Associate District Rotaract Secretary', category: ROLE_CATEGORIES.ADMINISTRATION, tier: 'associate' },
   { id: 3, title: 'Associate District Treasurer', category: ROLE_CATEGORIES.ADMINISTRATION, tier: 'associate' },
-
-  // Event Management
-  { id: 4, title: 'Chairperson - Women Empowerment', category: ROLE_CATEGORIES.EVENT_MANAGEMENT, tier: 'lead' },
 
   // Group Management
   { id: 5, title: 'Group Rotaract Representative', category: ROLE_CATEGORIES.GROUP_MANAGEMENT, tier: 'associate' },
@@ -111,9 +105,6 @@ const DISTRICT_POSITIONS = [
   { id: 24, title: 'Associate - Editorial Board', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'associate' },
   { id: 25, title: 'Head - Creatives', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'lead' },
   { id: 26, title: 'Associate - Creatives', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'associate' },
-  { id: 27, title: 'Deputy - Public Relations', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'deputy' },
-  { id: 28, title: 'Associate - Public Relations', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'associate' },
-  { id: 29, title: 'Head - Media', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'lead' },
   { id: 30, title: 'Associate - Media', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'associate' },
   { id: 31, title: 'Head - Videography', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'lead' },
   { id: 32, title: 'Deputy - PRO', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'deputy' },
@@ -126,6 +117,22 @@ const DISTRICT_POSITIONS = [
   { id: 39, title: 'Associate - World Record Team', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'associate' },
   { id: 41, title: 'Secretary - Annual District Rotaract Assembly', category: ROLE_CATEGORIES.EVENT_MANAGEMENT, tier: 'lead' },
   { id: 42, title: 'Co - Chairperson - Annual District Rotaract Assembly', category: ROLE_CATEGORIES.EVENT_MANAGEMENT, tier: 'lead' },
+
+  { id: 43, title: 'Associate - Sports', category: ROLE_CATEGORIES.SERVICE_AVENUES, tier: 'associate' },
+  { id: 44, title: 'Head - Employment Cell', category: ROLE_CATEGORIES.SERVICE_AVENUES, tier: 'lead' },
+  { id: 45, title: 'Associate - Employment Cell', category: ROLE_CATEGORIES.SERVICE_AVENUES, tier: 'associate' },
+  { id: 46, title: 'Deputy - Women Empowerment', category: ROLE_CATEGORIES.EVENT_MANAGEMENT, tier: 'deputy' },
+  { id: 47, title: 'Associate - Women Empowerment', category: ROLE_CATEGORIES.EVENT_MANAGEMENT, tier: 'associate' },
+  { id: 48, title: 'Associate - Rotaract Inter District Exchange', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'associate' },
+  { id: 49, title: 'Associate - Rotaract Inter Club Exchange', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'associate' },
+  { id: 50, title: 'Head - Photography', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'lead' },
+  { id: 51, title: 'Deputy - Photography', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'deputy' },
+  { id: 52, title: 'Associate - Photography', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'associate' },
+  { id: 53, title: 'Associate - Videography', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'associate' },
+  { id: 54, title: 'Head - Membership', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'lead' },
+  { id: 55, title: 'Deputy - Membership', category: ROLE_CATEGORIES.SPECIALIZED, tier: 'deputy' },
+  { id: 56, title: 'Deputy - Social Media', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'deputy' },
+  { id: 57, title: 'Deputy - Editorial Board', category: ROLE_CATEGORIES.COMMUNICATIONS_MEDIA, tier: 'deputy' },
 ];
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
