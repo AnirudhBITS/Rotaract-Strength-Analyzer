@@ -2,8 +2,35 @@ const db = require('../config/database');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const XLSX = require('xlsx');
+const archiver = require('archiver');
 const { DISTRICT_POSITIONS } = require('../config/constants');
 const { sendInterviewNotification } = require('../utils/mailer');
+
+const MIME_EXT = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+};
+
+function decodeDataUri(dataUri) {
+  if (!dataUri || typeof dataUri !== 'string' || !dataUri.startsWith('data:')) return null;
+  const match = dataUri.match(/^data:([^;,]+)(?:;base64)?,([\s\S]*)$/);
+  if (!match) return null;
+  const mime = match[1].toLowerCase();
+  const ext = MIME_EXT[mime] || 'bin';
+  const buffer = Buffer.from(match[2], 'base64');
+  return { ext, buffer };
+}
+
+function sanitizeFilenamePart(s) {
+  return String(s || 'unknown')
+    .replace(/[\\/:*?"<>|\r\n\t]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 80) || 'unknown';
+}
 
 async function login(req, res, next) {
   try {
@@ -202,10 +229,30 @@ async function exportApplicants(req, res, next) {
       }
     }
 
+    const usedFilenames = new Set();
+    const photoPlan = [];
+
     const rows = applicants.map((a) => {
       const scores = scoresByApplicant[a.id] || [];
       const top5 = scores.filter((s) => s.rank <= 5).map((s) => s.theme);
       const prefs = prefsByApplicant[a.id] || { user: [], system: [] };
+
+      const baseName = `${sanitizeFilenamePart(a.name)} - ${sanitizeFilenamePart(a.club_name)}`;
+
+      const buildPhotoEntry = (dataUri, kind) => {
+        const decoded = decodeDataUri(dataUri);
+        if (!decoded) return '';
+        let filename = `${baseName} - ${kind}.${decoded.ext}`;
+        if (usedFilenames.has(filename)) {
+          filename = `${baseName} - ${kind} (${a.application_number || a.id}).${decoded.ext}`;
+        }
+        usedFilenames.add(filename);
+        photoPlan.push({ filename, buffer: decoded.buffer });
+        return filename;
+      };
+
+      const profFile = buildPhotoEntry(a.professional_photo, 'professional');
+      const casualFile = buildPhotoEntry(a.casual_photo, 'casual');
 
       return {
         'Application #': a.application_number || '',
@@ -223,6 +270,8 @@ async function exportApplicants(req, res, next) {
         'Address': a.address,
         'Past Positions': a.past_positions || '',
         'Hobbies': a.hobbies || '',
+        'Professional Photo File': profFile,
+        'Casual Photo File': casualFile,
         'Strength #1': top5[0] || '',
         'Strength #2': top5[1] || '',
         'Strength #3': top5[2] || '',
@@ -243,7 +292,6 @@ async function exportApplicants(req, res, next) {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(rows);
 
-    // Auto-width columns
     const colWidths = Object.keys(rows[0] || {}).map((key) => {
       const maxLen = Math.max(
         key.length,
@@ -255,11 +303,27 @@ async function exportApplicants(req, res, next) {
 
     XLSX.utils.book_append_sheet(wb, ws, 'Applicants');
 
-    const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const xlsxBuffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename=rotaract-applicants-${new Date().toISOString().split('T')[0]}.xlsx`);
-    res.send(buffer);
+    const today = new Date().toISOString().split('T')[0];
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename=rotaract-applicants-${today}.zip`);
+
+    const archive = archiver('zip', { zlib: { level: 1 } });
+    archive.on('warning', (err) => console.warn('archiver warning:', err));
+    archive.on('error', (err) => {
+      console.error('archiver error:', err);
+      if (!res.headersSent) res.status(500);
+      res.end();
+    });
+    archive.pipe(res);
+
+    archive.append(xlsxBuffer, { name: `rotaract-applicants-${today}.xlsx` });
+    for (const photo of photoPlan) {
+      archive.append(photo.buffer, { name: `photos/${photo.filename}` });
+    }
+
+    await archive.finalize();
   } catch (err) {
     next(err);
   }
