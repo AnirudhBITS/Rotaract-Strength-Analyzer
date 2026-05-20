@@ -63,18 +63,19 @@ export default function AdminDashboard() {
   }
 
   const handleExport = async () => {
+    const toastId = toast.loading('Preparing export (this may take a few minutes)...')
     try {
       const response = await adminApi.exportAll()
-      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const blob = new Blob([response.data], { type: 'application/zip' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `rotaract-applicants-${new Date().toISOString().split('T')[0]}.xlsx`
+      a.download = `rotaract-applicants-${new Date().toISOString().split('T')[0]}.zip`
       a.click()
       URL.revokeObjectURL(url)
-      toast.success('Export downloaded')
+      toast.success('Export downloaded', { id: toastId })
     } catch (e) {
-      toast.error('Export failed')
+      toast.error('Export failed', { id: toastId })
     }
   }
 

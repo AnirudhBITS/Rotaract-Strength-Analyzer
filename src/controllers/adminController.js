@@ -196,63 +196,58 @@ async function getDashboardStats(req, res, next) {
 async function exportApplicants(req, res, next) {
   try {
     const applicants = await db('applicants')
-      .select('*')
+      .select(
+        'id', 'application_number', 'name', 'email', 'phone', 'secondary_phone',
+        'club_name', 'rotary_id', 'age', 'date_of_birth', 'profession',
+        'blood_group', 'willing_to_donate', 'address', 'past_positions', 'hobbies',
+        'status', 'admin_notes', 'created_at'
+      )
       .orderBy('created_at', 'desc');
 
     const strengthScores = await db('strength_scores')
-      .select('*')
+      .select('applicant_id', 'theme', 'rank')
       .orderBy('rank', 'asc');
 
     const rolePreferences = await db('role_preferences')
-      .select('*')
+      .select('applicant_id', 'position_id', 'type', 'preference_order')
       .orderBy('preference_order', 'asc');
 
     const scoresByApplicant = {};
     for (const score of strengthScores) {
-      if (!scoresByApplicant[score.applicant_id]) {
-        scoresByApplicant[score.applicant_id] = [];
-      }
+      if (!scoresByApplicant[score.applicant_id]) scoresByApplicant[score.applicant_id] = [];
       scoresByApplicant[score.applicant_id].push(score);
     }
 
     const prefsByApplicant = {};
     for (const pref of rolePreferences) {
-      if (!prefsByApplicant[pref.applicant_id]) {
-        prefsByApplicant[pref.applicant_id] = { user: [], system: [] };
-      }
+      if (!prefsByApplicant[pref.applicant_id]) prefsByApplicant[pref.applicant_id] = { user: [], system: [] };
       const pos = DISTRICT_POSITIONS.find((p) => p.id === pref.position_id);
       const title = pos ? pos.title : `Position #${pref.position_id}`;
-      if (pref.type === 'user_choice') {
-        prefsByApplicant[pref.applicant_id].user.push(title);
-      } else {
-        prefsByApplicant[pref.applicant_id].system.push(title);
-      }
+      if (pref.type === 'user_choice') prefsByApplicant[pref.applicant_id].user.push(title);
+      else prefsByApplicant[pref.applicant_id].system.push(title);
     }
 
     const usedFilenames = new Set();
     const photoPlan = [];
 
+    const reserveFilename = (baseName, kind, ext, appNum, id) => {
+      let filename = `${baseName} - ${kind}.${ext}`;
+      if (usedFilenames.has(filename)) {
+        filename = `${baseName} - ${kind} (${appNum || id}).${ext}`;
+      }
+      usedFilenames.add(filename);
+      return filename;
+    };
+
     const rows = applicants.map((a) => {
       const scores = scoresByApplicant[a.id] || [];
       const top5 = scores.filter((s) => s.rank <= 5).map((s) => s.theme);
       const prefs = prefsByApplicant[a.id] || { user: [], system: [] };
-
       const baseName = `${sanitizeFilenamePart(a.name)} - ${sanitizeFilenamePart(a.club_name)}`;
 
-      const buildPhotoEntry = (dataUri, kind) => {
-        const decoded = decodeDataUri(dataUri);
-        if (!decoded) return '';
-        let filename = `${baseName} - ${kind}.${decoded.ext}`;
-        if (usedFilenames.has(filename)) {
-          filename = `${baseName} - ${kind} (${a.application_number || a.id}).${decoded.ext}`;
-        }
-        usedFilenames.add(filename);
-        photoPlan.push({ filename, buffer: decoded.buffer });
-        return filename;
-      };
-
-      const profFile = buildPhotoEntry(a.professional_photo, 'professional');
-      const casualFile = buildPhotoEntry(a.casual_photo, 'casual');
+      const profFile = reserveFilename(baseName, 'professional', 'jpg', a.application_number, a.id);
+      const casualFile = reserveFilename(baseName, 'casual', 'jpg', a.application_number, a.id);
+      photoPlan.push({ id: a.id, baseName, appNum: a.application_number, profFile, casualFile });
 
       return {
         'Application #': a.application_number || '',
@@ -309,21 +304,62 @@ async function exportApplicants(req, res, next) {
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename=rotaract-applicants-${today}.zip`);
 
-    const archive = archiver('zip', { zlib: { level: 1 } });
+    const archive = archiver('zip', { zlib: { level: 0 } });
+    let archiveFailed = false;
     archive.on('warning', (err) => console.warn('archiver warning:', err));
     archive.on('error', (err) => {
+      archiveFailed = true;
       console.error('archiver error:', err);
       if (!res.headersSent) res.status(500);
-      res.end();
+      try { res.end(); } catch (_) {}
+    });
+    req.on('close', () => {
+      if (!res.writableEnded) {
+        archiveFailed = true;
+        try { archive.abort(); } catch (_) {}
+      }
     });
     archive.pipe(res);
 
     archive.append(xlsxBuffer, { name: `rotaract-applicants-${today}.xlsx` });
-    for (const photo of photoPlan) {
-      archive.append(photo.buffer, { name: `photos/${photo.filename}` });
+
+    const renameForActualExt = (placeholderName, actualExt) =>
+      placeholderName.replace(/\.jpg$/, `.${actualExt}`);
+
+    const waitForDrain = () => {
+      if (res.writableNeedDrain) {
+        return new Promise((resolve) => res.once('drain', resolve));
+      }
+      return Promise.resolve();
+    };
+
+    for (const entry of photoPlan) {
+      if (archiveFailed) break;
+
+      const row = await db('applicants')
+        .select('professional_photo', 'casual_photo')
+        .where({ id: entry.id })
+        .first();
+      if (!row) continue;
+
+      for (const [field, placeholder] of [
+        ['professional_photo', entry.profFile],
+        ['casual_photo', entry.casualFile],
+      ]) {
+        if (archiveFailed) break;
+        const decoded = decodeDataUri(row[field]);
+        if (!decoded) continue;
+        const finalName = renameForActualExt(placeholder, decoded.ext);
+        archive.append(decoded.buffer, { name: `photos/${finalName}` });
+        await waitForDrain();
+      }
+      row.professional_photo = null;
+      row.casual_photo = null;
     }
 
-    await archive.finalize();
+    if (!archiveFailed) {
+      await archive.finalize();
+    }
   } catch (err) {
     next(err);
   }
